@@ -123,11 +123,36 @@ class Tetros:
             block = Block(group, position, self.colour)
             self.blocks.append(block)
 
-    def move_down(self):
+    def check_horizontal_collision(self, spaces):
+        collisions = []
         for block in self.blocks:
-            print(block.rect.y)
-            block.position.y += GRID_SIZE
-            print(block.rect.y)
+            collisions.append(block.horizontal_collide(int(block.position.x + spaces)))
+        for item in collisions:
+            if item:
+                return True
+        return False
+
+    def check_vertical_collision(self, spaces):
+        collisions = []
+        for block in self.blocks:
+            collisions.append(block.vertical_collide(int(block.position.y + spaces)))
+        for item in collisions:
+            if item:
+                return True
+        return False
+
+    def move_down(self):
+        if not self.check_vertical_collision(1):
+            for block in self.blocks:
+                block.position.y += 1
+                print(block.rect.y)
+
+    def move_horizontal(self, spaces):
+        if not self.check_horizontal_collision(spaces):
+            for block in self.blocks:
+                block.position.x += spaces
+
+
 
 
 class Tetris:
@@ -148,6 +173,7 @@ class Tetris:
         # timers
         self.vertical_timer = Timer(START_SPEED, True, self.move_down)
         self.vertical_timer.start()
+        self.horizontal_timer = Timer(MAX_BUTTON_DELAY)
 
     def move_down(self):
         print("time tick")
@@ -155,6 +181,7 @@ class Tetris:
 
     def update_timers(self):
         self.vertical_timer.update()
+        self.horizontal_timer.update()
 
     def draw_grid(self):
         for col in range(1, COLUMNS):
@@ -163,12 +190,30 @@ class Tetris:
         for row in range(1, ROWS):
             pygame.draw.line(self.surface, (30, 30, 0), (0, row * GRID_SIZE), (GAME_WIDTH, row * GRID_SIZE))
 
+    def user_input(self):
+        user_input = pygame.key.get_pressed()
+        if not self.horizontal_timer.active:
+            if user_input[pygame.K_LEFT]:
+                self.tetro.move_horizontal(-1)
+                self.horizontal_timer.start()
+            if user_input[pygame.K_RIGHT]:
+                self.tetro.move_horizontal(1)
+                self.horizontal_timer.start()
+            if user_input[pygame.K_UP]:
+                pass
+            if user_input[pygame.K_DOWN]:
+                pass
+
     def run(self):
+        self.user_input()
         self.update_timers()
         self.sprites.update()
-        self.display_surface.blit(self.surface, (PADDING, PADDING))
+        self.surface.fill('#000000')
         self.sprites.draw(self.surface)
         self.draw_grid()
+        self.display_surface.blit(self.surface, (PADDING, PADDING))
+
+
 
 
 class Block(pygame.sprite.Sprite):
@@ -177,16 +222,21 @@ class Block(pygame.sprite.Sprite):
         self.image = pygame.Surface((GRID_SIZE, GRID_SIZE))
         self.image.fill(colour)
 
-        self.position = pygame.Vector2(position) + pygame.Vector2(COLUMNS//2-2, 1)  # set to roughly centre
+        self.position = pygame.Vector2(position) + pygame.Vector2(COLUMNS//2-2, -2)  # set to roughly centre
         x = self.position.x * GRID_SIZE
         y = self.position.y * GRID_SIZE
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         # get pos to update rect
-        # print(self.position)
-        pass
+        # self.rect = self.image.get_rect(topleft=self.position * GRID_SIZE)
+        self.rect.topleft = self.position * GRID_SIZE
 
+    def horizontal_collide(self, x_coord):
+        return not 0 <= x_coord < COLUMNS
+
+    def vertical_collide(self, y_coord):
+        return y_coord >= ROWS
 
 class Main:
     def __init__(self):
@@ -239,13 +289,3 @@ class Main:
 # MAIN PROGRAM
 game = Main()
 game.run()
-
-
-
-
-
-
-
-
-
-
