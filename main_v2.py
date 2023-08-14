@@ -52,13 +52,16 @@ class Timer:
 class Text:
     # class to manage the display of text within pygame
     def __init__(self, text, x, y, colour, size, centered):
+        self.centered = centered
         self.display_surface = pygame.display.get_surface()
-        font = pygame.font.SysFont(None, size)
+        font = pygame.font.Font("Arcade.ttf", size)
         self.text = font.render(text, True, colour)
         self.x = x
         self.y = y
-        if centered:
-            text_rect = self.text.get_rect(center=(self.display_surface.get_width()/2, y))
+
+    def display_text(self):
+        if self.centered:
+            text_rect = self.text.get_rect(center=(self.display_surface.get_width()/2, self.y))
             self.display_surface.blit(self.text, text_rect)
         else:
             self.display_surface.blit(self.text, (self.x, self.y))
@@ -89,9 +92,25 @@ class Score:
     def __init__(self):
         self.surface = pygame.Surface((HUD_WIDTH, HUD_HEIGHT))
         self.display_surface = pygame.display.get_surface()
+        self.group_txt = Text("Group 17", 500, 30, "#ffffff", 30, False)
+        self.score_txt = Text("Score:", 460, 500, "#ffffff", 30, False)
+        self.lines_txt = Text("Lines:", 460, 550, "#ffffff", 30, False)
+        self.level_txt = Text("Level:", 460, 600, "#ffffff", 30, False)
+        self.extend_txt = Text("Extended:", 460, 650, "#ffffff", 30, False)
+        self.mode_txt = Text("Mode:", 460, 700, "#ffffff", 30, False)
+
+
 
     def run(self):
+        self.surface.fill("#000000")
+
         self.display_surface.blit(self.surface, (2 * PADDING + GAME_WIDTH, PADDING))
+        self.group_txt.display_text()
+        self.score_txt.display_text()
+        self.lines_txt.display_text()
+        self.level_txt.display_text()
+        self.extend_txt.display_text()
+        self.mode_txt.display_text()
 
 
 class Tetros:
@@ -173,6 +192,7 @@ class Tetris:
         return random_shape
 
     def create_new_tetro(self):
+        self.check_for_completed_row()
         self.tetro = Tetros(self.get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
     def move_down(self):
@@ -212,6 +232,32 @@ class Tetris:
             menu_system[MENU] = True
             print(menu_system)
             # show pause game menu
+
+    def check_for_completed_row(self):
+        # get index of any full row
+        remove_rows = []
+        # for i, row in enumerate(self.board_pieces):
+        #     if all(row):
+        #         remove_rows.append(i)
+        for row in range(len(self.board_pieces)):
+            if all(self.board_pieces[row]):
+                remove_rows.append(row)
+
+        if remove_rows:
+            for remove_row in remove_rows:
+                # remove the completed row from board
+                for block in self.board_pieces[remove_row]:
+                    block.kill()
+                # move the remaining blocks down
+                for row in self.board_pieces:
+                    for block in row:
+                        if block and block.position.y < remove_row:
+                            block.position.y += 1
+            # rebuild the board_pieces array
+            self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+            for block in self.sprites:
+                self.board_pieces[int(block.position.y)][int(block.position.x)] = block
+
 
     def run(self):
         self.user_input()
@@ -281,7 +327,7 @@ class Main:
         play_img = pygame.image.load('play.png').convert_alpha()
         self.play = Button(124, 296, play_img)
         score_img = pygame.image.load('score.png').convert_alpha()
-        self.score = Button(378, 296, score_img)
+        self.score_btn = Button(378, 296, score_img)
         config_img = pygame.image.load('config.png').convert_alpha()
         self.config = Button(124, 413, config_img)
         exit_img = pygame.image.load('exit.png').convert_alpha()
@@ -302,7 +348,7 @@ class Main:
                     reset_menu(menu_system)
                     menu_system[GAME] = True
                     print(menu_system)
-                if self.score.display(self.display_surface):
+                if self.score_btn.display(self.display_surface):
                     print("Score clicked")
                     reset_menu(menu_system)
                     menu_system[SCORE] = True
@@ -335,7 +381,7 @@ class Main:
             elif menu_system[GAME]: # game
                 self.display_surface.fill("Grey15")
                 self.game.run()
-
+                self.score.run()
 
 
 
