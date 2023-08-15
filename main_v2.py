@@ -49,24 +49,6 @@ class Timer:
                     self.start()
 
 
-class Text:
-    # class to manage the display of text within pygame
-    def __init__(self, text, x, y, colour, size, centered):
-        self.centered = centered
-        self.display_surface = pygame.display.get_surface()
-        font = pygame.font.Font("Arcade.ttf", size)
-        self.text = font.render(text, True, colour)
-        self.x = x
-        self.y = y
-
-    def display_text(self):
-        if self.centered:
-            text_rect = self.text.get_rect(center=(self.display_surface.get_width()/2, self.y))
-            self.display_surface.blit(self.text, text_rect)
-        else:
-            self.display_surface.blit(self.text, (self.x, self.y))
-
-
 class Button:
     def __init__(self, x, y, image):
         self.image = image
@@ -92,29 +74,33 @@ class Score:
     def __init__(self):
         self.surface = pygame.Surface((HUD_WIDTH, HUD_HEIGHT))
         self.display_surface = pygame.display.get_surface()
-        self.group_txt = Text("Group 17", 500, 30, "#ffffff", 30, False)
-        self.score_txt = Text("Score:", 460, 500, "#ffffff", 30, False)
-        self.lines_txt = Text("Lines:", 460, 550, "#ffffff", 30, False)
-        self.level_txt = Text("Level:", 460, 600, "#ffffff", 30, False)
-        self.extend_txt = Text("Extended:", 460, 650, "#ffffff", 30, False)
-        self.mode_txt = Text("Mode:", 460, 700, "#ffffff", 30, False)
+        self.font = pygame.font.Font("Arcade.ttf", 30)
 
+        self.score = 0
+        self.level = 1
+        self.lines = 0
 
+    def display_text(self, position, text):
+        text_surface = self.font.render(text, True, "#ffffff")
+        text_rect = text_surface.get_rect(topleft=position)
+        self.surface.blit(text_surface, text_rect)
 
     def run(self):
         self.surface.fill("#000000")
 
+        self.display_text((70, 20), "Group 17")
+        self.display_text((20, 550), f"Score: {self.score}")
+        self.display_text((20, 600), f"Lines: {self.lines}")
+        self.display_text((20, 650), f"Level: {self.level}")
+        self.display_text((20, 700), f"Extended: {EXTENDED}")
+        self.display_text((20, 750), f"Mode: Human")
         self.display_surface.blit(self.surface, (2 * PADDING + GAME_WIDTH, PADDING))
-        self.group_txt.display_text()
-        self.score_txt.display_text()
-        self.lines_txt.display_text()
-        self.level_txt.display_text()
-        self.extend_txt.display_text()
-        self.mode_txt.display_text()
+
 
 
 class Tetros:
     def __init__(self, shape, group, create_new_tetro, board_pieces):
+        self.shape = shape
         self.block_positions = TETROS[shape]["shape"]
         self.colour = TETROS[shape]["colour"]
         self.create_new_tetro = create_new_tetro
@@ -159,14 +145,25 @@ class Tetros:
             for block in self.blocks:
                 block.position.x += spaces
 
+    def rotate(self):
+        print("rotate")
+        if self.shape != 'O':
+            pivot_point = self.blocks[0].position
+
+            # new block positions
+            new_block_positions = [block.rotate(pivot_point) for block in self.blocks]
+
+            for i, block in enumerate(self.blocks):
+                block.position = new_block_positions[i]
+
 
 class Tetris:
-    def __init__(self):
+    def __init__(self, update_score):
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
-
+        self.update_score = update_score
         # normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
         # extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extended", "J_extended"]
         # if EXTENDED:
@@ -181,6 +178,12 @@ class Tetris:
         self.vertical_timer = Timer(START_SPEED, True, self.move_down)
         self.vertical_timer.start()
         self.horizontal_timer = Timer(MAX_BUTTON_DELAY)
+        self.rotational_timer = Timer(MAX_BUTTON_DELAY)
+
+        # score
+        self.current_level = 1
+        self.current_score = 0
+        self.current_lines = 0
 
     def get_shape(self):
         normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
@@ -202,6 +205,7 @@ class Tetris:
     def update_timers(self):
         self.vertical_timer.update()
         self.horizontal_timer.update()
+        self.rotational_timer.update()
 
     def draw_grid(self):
         for col in range(1, COLUMNS):
@@ -211,8 +215,10 @@ class Tetris:
             pygame.draw.line(self.surface, (30, 30, 0), (0, row * GRID_SIZE), (GAME_WIDTH, row * GRID_SIZE))
 
     def user_input(self):
+        # get user input key pressed
         user_input = pygame.key.get_pressed()
 
+        # check if it was left or right
         if not self.horizontal_timer.active:
             if user_input[pygame.K_LEFT]:
                 self.tetro.move_horizontal(-1)
@@ -220,8 +226,10 @@ class Tetris:
             if user_input[pygame.K_RIGHT]:
                 self.tetro.move_horizontal(1)
                 self.horizontal_timer.start()
+        if not self.rotational_timer.active:
             if user_input[pygame.K_UP]:
-                pass
+                self.tetro.rotate()
+                self.rotational_timer.start()
             if user_input[pygame.K_DOWN]:
                 pass
         if user_input[pygame.K_ESCAPE]:
@@ -258,6 +266,14 @@ class Tetris:
             for block in self.sprites:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
 
+            self.calculate_score(len(remove_rows))
+
+    def calculate_score(self, cleared_lines):
+        self.current_lines += cleared_lines
+        self.current_score += SCORES[cleared_lines] * self.current_level
+        if self.current_lines / 10 > self.current_level:
+            self.current_level += 1
+        self.update_score(self.current_lines, self.current_score, self.current_level)
 
     def run(self):
         self.user_input()
@@ -299,6 +315,12 @@ class Block(pygame.sprite.Sprite):
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:
             return True
 
+    def rotate(self, pivot_point):
+        distance = self.position - pivot_point
+        rotated = distance.rotate(90)
+        new_position = pivot_point + rotated
+        return new_position
+
 
 class Main:
     def __init__(self):
@@ -312,7 +334,7 @@ class Main:
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
 
-        self.game = Tetris()
+        self.game = Tetris(self.update_score)
         self.score = Score()
 
         # self.display_surface = pygame.display.get_surface()
@@ -322,7 +344,6 @@ class Main:
 
         return_img = pygame.image.load('return.png').convert_alpha()
         self.returnbtn = Button(270, 700, return_img)
-        self.returnbtn_game = Button(470, 750, return_img)
 
         play_img = pygame.image.load('play.png').convert_alpha()
         self.play = Button(124, 296, play_img)
@@ -332,6 +353,11 @@ class Main:
         self.config = Button(124, 413, config_img)
         exit_img = pygame.image.load('exit.png').convert_alpha()
         self.exit = Button(378, 413, exit_img)
+
+    def update_score(self, lines, score, level):
+        self.score.lines = lines
+        self.score.score = score
+        self.score.level = level
 
     def run(self):
 
@@ -378,21 +404,10 @@ class Main:
                     reset_menu(menu_system)
                     menu_system[MENU] = True
                     print(menu_system)
-            elif menu_system[GAME]: # game
+            elif menu_system[GAME]:  # game
                 self.display_surface.fill("Grey15")
                 self.game.run()
                 self.score.run()
-
-
-
-
-                if self.returnbtn_game.display(self.display_surface):
-                    print("Return clicked")
-                    reset_menu(menu_system)
-                    menu_system[MENU] = True
-                    print(menu_system)
-            # print("menu:", self.running, "play", self.playing)
-
 
             pygame.display.update()
             self.clock.tick(50)
