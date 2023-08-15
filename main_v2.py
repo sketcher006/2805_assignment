@@ -1,5 +1,5 @@
 from global_settings import *
-from pygame.locals import *
+from os import path
 
 MENU = 0
 SCORE = 1
@@ -15,6 +15,15 @@ def reset_menu(menu):
     for i in range(4):
         menu[i] = False
 
+
+def get_shape():
+    normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
+    extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
+    if EXTENDED:
+        random_shape = random.choice(extended_shapes_list)
+    else:
+        random_shape = random.choice(normal_shapes_list)
+    return random_shape
 
 class Timer:
     # class to manage timers for the game
@@ -70,32 +79,43 @@ class Button:
         return action
 
 
-class Score:
+class Hud:
     def __init__(self):
         self.surface = pygame.Surface((HUD_WIDTH, HUD_HEIGHT))
         self.display_surface = pygame.display.get_surface()
-        self.font = pygame.font.Font("Arcade.ttf", 30)
+        self.font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
 
         self.score = 0
         self.level = 1
         self.lines = 0
+
+        self.shape_surfaces = {
+            shape: pygame.image.load(path.join("images", f"{shape}.png")).convert_alpha() for shape in TETROS.keys()
+        }
+        print(self.shape_surfaces)
 
     def display_text(self, position, text):
         text_surface = self.font.render(text, True, "#ffffff")
         text_rect = text_surface.get_rect(topleft=position)
         self.surface.blit(text_surface, text_rect)
 
-    def run(self):
-        self.surface.fill("#000000")
+    def display_pieces(self, shapes):
+        for i, shape in enumerate(shapes):
+            shape_surface = self.shape_surfaces[shape]
+            self.surface.blit(shape_surface, (50, 140+180*i))
 
+    def run(self, next_shapes):
+        self.surface.fill("#000000")
+        self.display_pieces(next_shapes)
         self.display_text((70, 20), "Group 17")
+        self.display_text((50, 80), "Next pieces")
+        pygame.draw.line(self.surface, "#ffffff", (10, 60), (235, 60), 3)
         self.display_text((20, 550), f"Score: {self.score}")
         self.display_text((20, 600), f"Lines: {self.lines}")
         self.display_text((20, 650), f"Level: {self.level}")
         self.display_text((20, 700), f"Extended: {EXTENDED}")
         self.display_text((20, 750), f"Mode: Human")
         self.display_surface.blit(self.surface, (2 * PADDING + GAME_WIDTH, PADDING))
-
 
 
 class Tetros:
@@ -158,23 +178,21 @@ class Tetros:
 
 
 class Tetris:
-    def __init__(self, update_score):
+    def __init__(self, update_score, get_next_shape):
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
         self.update_score = update_score
-        # normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        # extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extended", "J_extended"]
-        # if EXTENDED:
-        #     random_shape = random.choice(extended_shapes_list)
-        # else:
-        #     random_shape = random.choice(normal_shapes_list)
+        self.get_next_shape = get_next_shape
 
         self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
-        self.tetro = Tetros(self.get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
+        self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
         # timers
+        self.down_speed = START_SPEED
+        self.down_speed_fast = self.down_speed * .3
+        self.down_pressed = False
         self.vertical_timer = Timer(START_SPEED, True, self.move_down)
         self.vertical_timer.start()
         self.horizontal_timer = Timer(MAX_BUTTON_DELAY)
@@ -185,18 +203,9 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
 
-    def get_shape(self):
-        normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extended", "J_extended"]
-        if EXTENDED:
-            random_shape = random.choice(extended_shapes_list)
-        else:
-            random_shape = random.choice(normal_shapes_list)
-        return random_shape
-
     def create_new_tetro(self):
         self.check_for_completed_row()
-        self.tetro = Tetros(self.get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
+        self.tetro = Tetros(self.get_next_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
     def move_down(self):
         print("time tick")
@@ -226,12 +235,22 @@ class Tetris:
             if user_input[pygame.K_RIGHT]:
                 self.tetro.move_horizontal(1)
                 self.horizontal_timer.start()
+
+        # check if it was up
         if not self.rotational_timer.active:
             if user_input[pygame.K_UP]:
                 self.tetro.rotate()
                 self.rotational_timer.start()
-            if user_input[pygame.K_DOWN]:
-                pass
+
+        if not self.down_pressed and user_input[pygame.K_DOWN]:
+            self.down_pressed = True
+            self.vertical_timer.duration = self.down_speed_fast
+
+        if self.down_pressed and not user_input[pygame.K_DOWN]:
+            self.down_pressed = False
+            self.vertical_timer.duration = self.down_speed
+
+        # check if it was escape
         if user_input[pygame.K_ESCAPE]:
             print("Escape pressed")
             print(menu_system)
@@ -239,7 +258,6 @@ class Tetris:
             print(menu_system)
             menu_system[MENU] = True
             print(menu_system)
-            # show pause game menu
 
     def check_for_completed_row(self):
         # get index of any full row
@@ -325,7 +343,7 @@ class Block(pygame.sprite.Sprite):
 class Main:
     def __init__(self):
         pygame.init()
-        icon = pygame.image.load("icon.png")
+        icon = pygame.image.load(path.join("images", "icon.png"))
         pygame.display.set_icon(icon)
         pygame.display.set_caption("2805 Tetris")
         total_window_width = 3*PADDING + GAME_WIDTH + HUD_WIDTH
@@ -334,30 +352,38 @@ class Main:
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
 
-        self.game = Tetris(self.update_score)
-        self.score = Score()
+        self.next_shapes = [get_shape() for i in range(2)]
+        print("next shapes:", self.next_shapes)
+
+        self.game = Tetris(self.update_score, self.get_next_shape)
+        self.hud = Hud()
 
         # self.display_surface = pygame.display.get_surface()
-        self.home_page = pygame.image.load("home.png")
-        self.score_page = pygame.image.load("scores.png")
-        self.config_page = pygame.image.load("configpage.png")
+        self.home_page = pygame.image.load(path.join("images", "home.png")).convert_alpha()
+        self.score_page = pygame.image.load(path.join("images", "scores.png")).convert_alpha()
+        self.config_page = pygame.image.load(path.join("images", "configpage.png")).convert_alpha()
 
-        return_img = pygame.image.load('return.png').convert_alpha()
+        return_img = pygame.image.load(path.join("images", "return.png")).convert_alpha()
         self.returnbtn = Button(270, 700, return_img)
 
-        play_img = pygame.image.load('play.png').convert_alpha()
+        play_img = pygame.image.load(path.join("images", "play.png")).convert_alpha()
         self.play = Button(124, 296, play_img)
-        score_img = pygame.image.load('score.png').convert_alpha()
+        score_img = pygame.image.load(path.join("images", "score.png")).convert_alpha()
         self.score_btn = Button(378, 296, score_img)
-        config_img = pygame.image.load('config.png').convert_alpha()
+        config_img = pygame.image.load(path.join("images", "config.png")).convert_alpha()
         self.config = Button(124, 413, config_img)
-        exit_img = pygame.image.load('exit.png').convert_alpha()
+        exit_img = pygame.image.load(path.join("images", "exit.png")).convert_alpha()
         self.exit = Button(378, 413, exit_img)
 
+    def get_next_shape(self):
+        next_piece = self.next_shapes.pop(0)
+        self.next_shapes.append(random.choice(list(TETROS.keys())))
+        return next_piece
+
     def update_score(self, lines, score, level):
-        self.score.lines = lines
-        self.score.score = score
-        self.score.level = level
+        self.hud.lines = lines
+        self.hud.score = score
+        self.hud.level = level
 
     def run(self):
 
@@ -407,7 +433,7 @@ class Main:
             elif menu_system[GAME]:  # game
                 self.display_surface.fill("Grey15")
                 self.game.run()
-                self.score.run()
+                self.hud.run(self.next_shapes)
 
             pygame.display.update()
             self.clock.tick(50)
@@ -418,13 +444,4 @@ class Main:
 
 game = Main()
 game.run()
-
-
-
-
-
-
-
-
-
 
