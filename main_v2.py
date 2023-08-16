@@ -12,10 +12,11 @@ PAUSE = 4
 menu_system = [True, False, False, False, False]
 
 
-def reset_menu(menu):
+def reset_menu(menu, destination):
     # clear menu option
-    for i in range(4):
+    for i in range(len(menu)):
         menu[i] = False
+    menu[destination] = True
 
 
 def get_shape():
@@ -229,8 +230,7 @@ class Tetris:
 
                 # display GAME OVER
 
-                reset_menu(menu_system)
-                menu_system[MENU] = True
+                reset_menu(menu_system, MENU)
 
     def create_new_tetro(self):
         self.check_game_over()
@@ -283,11 +283,7 @@ class Tetris:
         # check if it was escape
         if user_input[pygame.K_ESCAPE]:
             print("Escape pressed")
-            print(menu_system)
-            reset_menu(menu_system)
-            print(menu_system)
-            menu_system[PAUSE] = True
-            print(menu_system)
+            reset_menu(menu_system, PAUSE)
 
     def check_for_completed_row(self):
         # get index of any full row
@@ -370,6 +366,32 @@ class Block(pygame.sprite.Sprite):
         return new_position
 
 
+class Config:
+    def __init__(self, game_size, game_level, normal_extended, game_mode):
+        self.game_size = game_size
+        self.game_level = game_level
+        self.normal_extended = normal_extended
+        self.game_mode = game_mode
+        self.surface = pygame.display.get_surface()
+        self.font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
+
+    def display_text(self, position, text):
+        text_surface = self.font.render(text, True, "#ffffff")
+        text_rect = text_surface.get_rect(topleft=position)
+        self.surface.blit(text_surface, text_rect)
+
+    def run(self):
+        text = "Extended" if self.normal_extended else "Normal"
+        mode = "Human" if self.game_mode else "AI"
+
+        self.display_text((60, 200), f"Game size: {int(self.game_size[0]/GRID_SIZE)} x {int(self.game_size[1]/GRID_SIZE)}")
+        self.display_text((60, 300), f"Level: {self.game_level}")
+
+        self.display_text((60, 400), f"Normal/Extended: {text}")
+        self.display_text((60, 500), f"Mode: {mode}")
+        self.surface.blit(self.surface, (0,0))
+
+
 class Main:
     def __init__(self):
         # initialise game
@@ -389,6 +411,7 @@ class Main:
         # start game instance
         self.hud = Hud()
         self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
+        self.config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
 
         # load background image files
         self.home_page = pygame.image.load(path.join("images", "home.png")).convert_alpha()
@@ -435,22 +458,16 @@ class Main:
                 self.display_surface.blit(self.home_page, (0, 0))
                 if self.play_btn.display(self.display_surface):
                     print("Play clicked")
-                    reset_menu(menu_system)
-                    menu_system[GAME] = True
-                    print(menu_system)
+                    reset_menu(menu_system, GAME)
                 if self.score_btn.display(self.display_surface):
                     print("Score clicked")
-                    reset_menu(menu_system)
-                    menu_system[SCORE] = True
-                    print(menu_system)
+                    reset_menu(menu_system, SCORE)
                 if self.config_btn.display(self.display_surface):
                     print("Config clicked")
-                    reset_menu(menu_system)
-                    menu_system[CONFIG] = True
-                    print(menu_system)
+                    reset_menu(menu_system, CONFIG)
                 if self.exit_btn.display(self.display_surface):
                     print("Exit clicked")
-                    reset_menu(menu_system)
+                    reset_menu(menu_system, MENU)
                     pygame.quit()
                     exit()
                 pass
@@ -458,16 +475,13 @@ class Main:
                 self.display_surface.blit(self.score_page, (0, 0))
                 if self.return_home_btn.display(self.display_surface):
                     print("Return clicked")
-                    reset_menu(menu_system)
-                    menu_system[MENU] = True
-                    print(menu_system)
+                    reset_menu(menu_system, MENU)
             elif menu_system[CONFIG]:  # config
                 self.display_surface.blit(self.config_page, (0, 0))
+                self.config.run()
                 if self.return_home_btn.display(self.display_surface):
                     print("Return clicked")
-                    reset_menu(menu_system)
-                    menu_system[MENU] = True
-                    print(menu_system)
+                    reset_menu(menu_system, MENU)
             elif menu_system[GAME]:  # game
                 self.display_surface.fill("Grey15")
                 self.game.run()
@@ -478,20 +492,14 @@ class Main:
                     print("Yes clicked")
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
-                    print("game:", self.game.current_lines, self.game.current_score, self.game.current_level)
-                    print("hud:", self.hud.lines,  self.hud.score, self.hud.level)
-                    reset_menu(menu_system)
+                    reset_menu(menu_system, MENU)
                     menu_system[MENU] = True
                     # restart the game
-                    print(menu_system)
                 if self.no_btn.display(self.display_surface):
                     print("No clicked")
-                    print("game:", self.game.current_lines, self.game.current_score, self.game.current_level)
-                    print("hud:", self.hud.lines,  self.hud.score, self.hud.level)
-                    reset_menu(menu_system)
+                    reset_menu(menu_system, GAME)
                     menu_system[GAME] = True
                     # restart the game
-                    print(menu_system)
 
             pygame.display.update()
             self.clock.tick(50)
@@ -500,4 +508,3 @@ class Main:
 # MAIN PROGRAM
 game = Main()
 game.run()
-
