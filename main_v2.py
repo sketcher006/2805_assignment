@@ -5,6 +5,7 @@ MENU = 0
 SCORE = 1
 CONFIG = 2
 GAME = 3
+GAME_STATUS = 1
 
 #             [menu,  score, confg, game]
 menu_system = [True, False, False, False]
@@ -24,6 +25,7 @@ def get_shape():
     else:
         random_shape = random.choice(normal_shapes_list)
     return random_shape
+
 
 class Timer:
     # class to manage timers for the game
@@ -92,7 +94,7 @@ class Hud:
         self.shape_surfaces = {
             shape: pygame.image.load(path.join("images", f"{shape}.png")).convert_alpha() for shape in TETROS.keys()
         }
-        print(self.shape_surfaces)
+        # print(self.shape_surfaces)
 
     def display_text(self, position, text):
         text_surface = self.font.render(text, True, "#ffffff")
@@ -166,7 +168,7 @@ class Tetros:
                 block.position.x += spaces
 
     def rotate(self):
-        print("rotate")
+        # print("rotate")
         if self.shape != 'O':
             pivot_point = self.blocks[0].position
 
@@ -203,12 +205,35 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
 
+    def check_game_over(self):
+
+        for block in self.tetro.blocks:
+            if block.position.y < 0:
+                print("GAME OVER")
+                # save high score to external file
+
+                self.update_score(0, 0, 1)
+                self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+                self.sprites.empty()
+
+                # display GAME OVER
+
+                reset_menu(menu_system)
+                menu_system[MENU] = True
+
+
+
+
+
+
+
     def create_new_tetro(self):
+        self.check_game_over()
         self.check_for_completed_row()
         self.tetro = Tetros(self.get_next_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
     def move_down(self):
-        print("time tick")
+        # print("time tick")
         self.tetro.move_down()
 
     def update_timers(self):
@@ -262,9 +287,6 @@ class Tetris:
     def check_for_completed_row(self):
         # get index of any full row
         remove_rows = []
-        # for i, row in enumerate(self.board_pieces):
-        #     if all(row):
-        #         remove_rows.append(i)
         for row in range(len(self.board_pieces)):
             if all(self.board_pieces[row]):
                 remove_rows.append(row)
@@ -291,6 +313,9 @@ class Tetris:
         self.current_score += SCORES[cleared_lines] * self.current_level
         if self.current_lines / 10 > self.current_level:
             self.current_level += 1
+            self.down_speed *= 0.8
+            self.down_speed_fast = self.down_speed * .3
+            self.vertical_timer.duration = self.down_speed
         self.update_score(self.current_lines, self.current_score, self.current_level)
 
     def run(self):
@@ -386,7 +411,6 @@ class Main:
         self.hud.level = level
 
     def run(self):
-
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -441,7 +465,10 @@ class Main:
 
 # MAIN PROGRAM
 
-
-game = Main()
-game.run()
+while True:
+    print(GAME_STATUS)
+    if GAME_STATUS:
+        game = Main()
+        game.run()
+        GAME_STATUS = 0
 
