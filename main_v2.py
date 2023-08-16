@@ -222,15 +222,19 @@ class Tetris:
     def check_game_over(self):
         for block in self.tetro.blocks:
             if block.position.y < 0:
+                # display GAME OVER
                 print("GAME OVER")
-                # save high score to external file
 
+                # save high score to external file
+                with open(path.join("assets", "high_scores.txt"), 'a') as high_scores:
+                    high_scores.write(str(self.current_score) + "\n")
+
+                # reset stats ready for new game
                 self.reset_game_stats()
                 self.reset_hud_stats()
 
-                # display GAME OVER
-
                 reset_menu(menu_system, MENU)
+                break
 
     def create_new_tetro(self):
         self.check_game_over()
