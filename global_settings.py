@@ -20,22 +20,26 @@ HUD_WIDTH = 250
 HUD_HEIGHT = GAME_HEIGHT
 
 ## EXTENDED
-EXTENDED = False
+EXTENDED = True
+
+## HUMAN or AI
+HUMAN = True
 
 ## TETRO SHAPES
 TETROS = {
     # Standard
-    "I": {"shape": [(0, 0), (1, 0), (2, 0), (3, 0)], "colour": (0, 240, 240)},  # aqua
-    "J": {"shape": [(0, 0), (0, 1), (1, 1), (2, 1)], "colour": (0, 0, 240)},  # blue
-    "L": {"shape": [(0, 1), (1, 1), (2, 0), (2, 1)], "colour": (240, 160, 0)},  # orange
+    #               PIVOT
+    "I": {"shape": [(1, 0), (0, 0), (2, 0), (3, 0)], "colour": (0, 240, 240)},  # aqua
+    "J": {"shape": [(1, 1), (0, 0), (0, 1), (2, 1)], "colour": (0, 0, 240)},  # blue
+    "L": {"shape": [(1, 1), (0, 1), (2, 0), (2, 1)], "colour": (240, 160, 0)},  # orange
     "O": {"shape": [(0, 0), (1, 0), (0, 1), (1, 1)], "colour": (240, 240, 0)},  # yellow
-    "S": {"shape": [(0, 1), (1, 1), (1, 0), (2, 0)], "colour": (0, 240, 0)},  # green
-    "T": {"shape": [(1, 0), (0, 1), (1, 1), (2, 1)], "colour": (160, 0, 240)},  # purple
-    "Z": {"shape": [(0, 0), (1, 0), (1, 1), (2, 1)], "colour": (240, 0, 0)},  # red
+    "S": {"shape": [(1, 1), (0, 1), (1, 0), (2, 0)], "colour": (0, 240, 0)},  # green
+    "T": {"shape": [(1, 1), (1, 0), (0, 1), (2, 1)], "colour": (160, 0, 240)},  # purple
+    "Z": {"shape": [(1, 1), (0, 0), (1, 0), (2, 1)], "colour": (240, 0, 0)},  # red
 
     # Extended
-    "I_extend": {"shape": [(0, 0), (1, 0), (2, 0)], "colour": (0, 240, 240)},  # aqua
-    "J_extend": {"shape": [(0, 0), (0, 1), (1, 1)], "colour": (0, 0, 240)}  # blue
+    "I_extend": {"shape": [(1, 0), (0, 0), (2, 0)], "colour": (0, 240, 240)},  # aqua
+    "J_extend": {"shape": [(0, 1), (0, 0), (1, 1)], "colour": (0, 0, 240)}  # blue
 }
 
 ## SCORE PER LINES
@@ -47,5 +51,5 @@ SCORES = {
 }
 
 ## START SETTINGS
-START_SPEED = 500
-MAX_BUTTON_DELAY = 200
+START_SPEED = 200
+MAX_BUTTON_DELAY = 150
