@@ -5,10 +5,11 @@ MENU = 0
 SCORE = 1
 CONFIG = 2
 GAME = 3
-GAME_STATUS = 1
+PAUSE = 4
 
-#             [menu,  score, confg, game]
-menu_system = [True, False, False, False]
+
+#             [menu,  score, confg, game, pause]
+menu_system = [True, False, False, False, False]
 
 
 def reset_menu(menu):
@@ -94,7 +95,11 @@ class Hud:
         self.shape_surfaces = {
             shape: pygame.image.load(path.join("images", f"{shape}.png")).convert_alpha() for shape in TETROS.keys()
         }
-        # print(self.shape_surfaces)
+
+    def reset_hud_stats(self):
+        self.score = 0
+        self.level = 1
+        self.lines = 0
 
     def display_text(self, position, text):
         text_surface = self.font.render(text, True, "#ffffff")
@@ -180,13 +185,14 @@ class Tetros:
 
 
 class Tetris:
-    def __init__(self, update_score, get_next_shape):
+    def __init__(self, update_score, get_next_shape, reset_hud_stats):
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
         self.sprites = pygame.sprite.Group()
         self.update_score = update_score
         self.get_next_shape = get_next_shape
+        self.reset_hud_stats = reset_hud_stats
 
         self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
         self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
@@ -205,27 +211,26 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
 
-    def check_game_over(self):
+    def reset_game_stats(self):
+        self.current_level = 1
+        self.current_score = 0
+        self.current_lines = 0
+        self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+        self.sprites.empty()
 
+    def check_game_over(self):
         for block in self.tetro.blocks:
             if block.position.y < 0:
                 print("GAME OVER")
                 # save high score to external file
 
-                self.update_score(0, 0, 1)
-                self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
-                self.sprites.empty()
+                self.reset_game_stats()
+                self.reset_hud_stats()
 
                 # display GAME OVER
 
                 reset_menu(menu_system)
                 menu_system[MENU] = True
-
-
-
-
-
-
 
     def create_new_tetro(self):
         self.check_game_over()
@@ -281,7 +286,7 @@ class Tetris:
             print(menu_system)
             reset_menu(menu_system)
             print(menu_system)
-            menu_system[MENU] = True
+            menu_system[PAUSE] = True
             print(menu_system)
 
     def check_for_completed_row(self):
@@ -367,6 +372,7 @@ class Block(pygame.sprite.Sprite):
 
 class Main:
     def __init__(self):
+        # initialise game
         pygame.init()
         icon = pygame.image.load(path.join("images", "icon.png"))
         pygame.display.set_icon(icon)
@@ -377,28 +383,36 @@ class Main:
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
 
+        # get next shapes ready for game to begin
         self.next_shapes = [get_shape() for i in range(2)]
-        print("next shapes:", self.next_shapes)
 
-        self.game = Tetris(self.update_score, self.get_next_shape)
+        # start game instance
         self.hud = Hud()
+        self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
 
-        # self.display_surface = pygame.display.get_surface()
+        # load background image files
         self.home_page = pygame.image.load(path.join("images", "home.png")).convert_alpha()
         self.score_page = pygame.image.load(path.join("images", "scores.png")).convert_alpha()
         self.config_page = pygame.image.load(path.join("images", "configpage.png")).convert_alpha()
+        self.pause_page = pygame.image.load(path.join("images", "pausepage.png")).convert_alpha()
 
+        # load button images
         return_img = pygame.image.load(path.join("images", "return.png")).convert_alpha()
-        self.returnbtn = Button(270, 700, return_img)
-
         play_img = pygame.image.load(path.join("images", "play.png")).convert_alpha()
-        self.play = Button(124, 296, play_img)
         score_img = pygame.image.load(path.join("images", "score.png")).convert_alpha()
-        self.score_btn = Button(378, 296, score_img)
         config_img = pygame.image.load(path.join("images", "config.png")).convert_alpha()
-        self.config = Button(124, 413, config_img)
         exit_img = pygame.image.load(path.join("images", "exit.png")).convert_alpha()
-        self.exit = Button(378, 413, exit_img)
+        yes_img = pygame.image.load(path.join("images", "yes.png")).convert_alpha()
+        no_img = pygame.image.load(path.join("images", "no.png")).convert_alpha()
+
+        # create buttons
+        self.return_home_btn = Button(270, 700, return_img)
+        self.yes_btn = Button(120, 550, yes_img)
+        self.no_btn = Button(400, 550, no_img)
+        self.play_btn = Button(124, 296, play_img)
+        self.score_btn = Button(378, 296, score_img)
+        self.config_btn = Button(124, 413, config_img)
+        self.exit_btn = Button(378, 413, exit_img)
 
     def get_next_shape(self):
         next_piece = self.next_shapes.pop(0)
@@ -419,7 +433,7 @@ class Main:
 
             if menu_system[0]:  # Menu
                 self.display_surface.blit(self.home_page, (0, 0))
-                if self.play.display(self.display_surface):
+                if self.play_btn.display(self.display_surface):
                     print("Play clicked")
                     reset_menu(menu_system)
                     menu_system[GAME] = True
@@ -429,12 +443,12 @@ class Main:
                     reset_menu(menu_system)
                     menu_system[SCORE] = True
                     print(menu_system)
-                if self.config.display(self.display_surface):
+                if self.config_btn.display(self.display_surface):
                     print("Config clicked")
                     reset_menu(menu_system)
                     menu_system[CONFIG] = True
                     print(menu_system)
-                if self.exit.display(self.display_surface):
+                if self.exit_btn.display(self.display_surface):
                     print("Exit clicked")
                     reset_menu(menu_system)
                     pygame.quit()
@@ -442,14 +456,14 @@ class Main:
                 pass
             elif menu_system[SCORE]:  # Score
                 self.display_surface.blit(self.score_page, (0, 0))
-                if self.returnbtn.display(self.display_surface):
+                if self.return_home_btn.display(self.display_surface):
                     print("Return clicked")
                     reset_menu(menu_system)
                     menu_system[MENU] = True
                     print(menu_system)
             elif menu_system[CONFIG]:  # config
                 self.display_surface.blit(self.config_page, (0, 0))
-                if self.returnbtn.display(self.display_surface):
+                if self.return_home_btn.display(self.display_surface):
                     print("Return clicked")
                     reset_menu(menu_system)
                     menu_system[MENU] = True
@@ -458,17 +472,32 @@ class Main:
                 self.display_surface.fill("Grey15")
                 self.game.run()
                 self.hud.run(self.next_shapes)
+            elif menu_system[PAUSE]:  # pause menu
+                self.display_surface.blit(self.pause_page, (0, 0))
+                if self.yes_btn.display(self.display_surface):
+                    print("Yes clicked")
+                    self.game.reset_game_stats()
+                    self.hud.reset_hud_stats()
+                    print("game:", self.game.current_lines, self.game.current_score, self.game.current_level)
+                    print("hud:", self.hud.lines,  self.hud.score, self.hud.level)
+                    reset_menu(menu_system)
+                    menu_system[MENU] = True
+                    # restart the game
+                    print(menu_system)
+                if self.no_btn.display(self.display_surface):
+                    print("No clicked")
+                    print("game:", self.game.current_lines, self.game.current_score, self.game.current_level)
+                    print("hud:", self.hud.lines,  self.hud.score, self.hud.level)
+                    reset_menu(menu_system)
+                    menu_system[GAME] = True
+                    # restart the game
+                    print(menu_system)
 
             pygame.display.update()
             self.clock.tick(50)
 
 
 # MAIN PROGRAM
-
-while True:
-    print(GAME_STATUS)
-    if GAME_STATUS:
-        game = Main()
-        game.run()
-        GAME_STATUS = 0
+game = Main()
+game.run()
 
