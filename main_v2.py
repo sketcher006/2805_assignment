@@ -1,3 +1,5 @@
+import pygame as pygame
+
 from global_settings import *
 from os import path
 
@@ -20,12 +22,14 @@ def reset_menu(menu, destination):
 
 
 def get_shape():
+    print("extended:", EXTENDED)
     normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
     extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
     if EXTENDED:
         random_shape = random.choice(extended_shapes_list)
     else:
         random_shape = random.choice(normal_shapes_list)
+    print(random_shape)
     return random_shape
 
 
@@ -133,6 +137,7 @@ class Tetros:
         self.colour = TETROS[shape]["colour"]
         self.create_new_tetro = create_new_tetro
         self.board_pieces = board_pieces
+        self.reset = False
 
         self.blocks = []
         for position in self.block_positions:
@@ -159,11 +164,13 @@ class Tetros:
 
     def move_down(self):
         # check block is within boundary
-        if not self.check_vertical_collision(1):
+        if not self.check_vertical_collision(1) and not self.reset:
             for block in self.blocks:
                 block.position.y += 1
                 # print(block.rect.y)
+            # print("move down")
         else:
+            self.reset = False
             for block in self.blocks:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
             self.create_new_tetro()
@@ -217,7 +224,15 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
         self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+        self.down_speed = START_SPEED
+        self.down_speed_fast = self.down_speed * .3
+        # self.vertical_timer = Timer(START_SPEED, True, self.move_down)
         self.sprites.empty()
+
+    def save_high_score(self):
+        # save high score to external file
+        with open(path.join("assets", "high_scores.txt"), 'a') as high_scores:
+            high_scores.write(str(self.current_score) + "\n")
 
     def check_game_over(self):
         for block in self.tetro.blocks:
@@ -225,9 +240,7 @@ class Tetris:
                 # display GAME OVER
                 print("GAME OVER")
 
-                # save high score to external file
-                with open(path.join("assets", "high_scores.txt"), 'a') as high_scores:
-                    high_scores.write(str(self.current_score) + "\n")
+                self.save_high_score()
 
                 # reset stats ready for new game
                 self.reset_game_stats()
@@ -287,6 +300,8 @@ class Tetris:
         # check if it was escape
         if user_input[pygame.K_ESCAPE]:
             print("Escape pressed")
+            print("down speed", self.down_speed)
+            print("vert timer", self.vertical_timer.duration)
             reset_menu(menu_system, PAUSE)
 
     def check_for_completed_row(self):
@@ -443,7 +458,17 @@ class Main:
 
     def get_next_shape(self):
         next_piece = self.next_shapes.pop(0)
-        self.next_shapes.append(random.choice(list(TETROS.keys())))
+
+        normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
+        extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
+        if EXTENDED:
+            self.next_shapes.append(random.choice(extended_shapes_list))
+
+        else:
+            self.next_shapes.append(random.choice(normal_shapes_list))
+
+        # self.next_shapes.append(random.choice(list(TETROS.keys())))
+        print(next_piece)
         return next_piece
 
     def update_score(self, lines, score, level):
@@ -494,8 +519,11 @@ class Main:
                 self.display_surface.blit(self.pause_page, (0, 0))
                 if self.yes_btn.display(self.display_surface):
                     print("Yes clicked")
+                    self.game.save_high_score()
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
+                    self.game.vertical_timer.duration = START_SPEED
+                    self.game.tetro.reset = True
                     reset_menu(menu_system, MENU)
                     menu_system[MENU] = True
                     # restart the game
