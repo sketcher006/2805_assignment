@@ -2,9 +2,11 @@ from global_settings import *
 from os import path
 
 
+# Class to handle the display of the HUD in the game screen
 class Hud:
     def __init__(self):
-        self.surface = pygame.Surface((HUD_WIDTH, HUD_HEIGHT))
+        # Constructor, no parameters
+        self.surface = pygame.Surface((400, HUD_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
 

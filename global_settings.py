@@ -1,5 +1,5 @@
 import pygame
-import random
+
 
 # GLOBALS
 
@@ -61,24 +61,5 @@ GAME = 3
 PAUSE = 4
 
 
-#             [menu,  score, confg, game, pause]
+#             [menu, score, confg, game, pause]
 menu_system = [True, False, False, False, False]
-
-
-def reset_menu(menu, destination):
-    # clear menu option
-    for i in range(len(menu)):
-        menu[i] = False
-    menu[destination] = True
-
-
-def get_shape():
-    print("extended:", EXTENDED)
-    normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
-    extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
-    if EXTENDED:
-        random_shape = random.choice(extended_shapes_list)
-    else:
-        random_shape = random.choice(normal_shapes_list)
-    print(random_shape)
-    return random_shape

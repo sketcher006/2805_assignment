@@ -1,9 +1,9 @@
-from global_settings import *
 from os import path
 from tetris import Tetris
 from hud import Hud
 from button import Button
 from config import Config
+from utility import *
 
 
 class Main:
@@ -25,7 +25,7 @@ class Main:
         # start game instance
         self.hud = Hud()
         self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
-        self.config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
+        # self.config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
 
         # load background image files
         self.home_page = pygame.image.load(path.join("images", "home.png")).convert_alpha()
@@ -102,7 +102,8 @@ class Main:
                     reset_menu(menu_system, MENU)
             elif menu_system[CONFIG]:  # config
                 self.display_surface.blit(self.config_page, (0, 0))
-                self.config.run()
+                config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
+                config.run()
                 if self.return_home_btn.display(self.display_surface):
                     print("Return clicked")
                     reset_menu(menu_system, MENU)

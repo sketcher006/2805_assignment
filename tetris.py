@@ -1,6 +1,7 @@
-from global_settings import *
+# from global_settings import *
 from timer import Timer
 from os import path
+from utility import *
 
 
 class Tetris:
