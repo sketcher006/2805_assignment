@@ -4,7 +4,9 @@ from os import path
 from utility import *
 
 
+# Class to handle the main logic and gameplay controller
 class Tetris:
+    # Constructor, parameters include callback functions update_score, get_next_shape, and reset_hud_stats
     def __init__(self, update_score, get_next_shape, reset_hud_stats):
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
@@ -14,17 +16,19 @@ class Tetris:
         self.get_next_shape = get_next_shape
         self.reset_hud_stats = reset_hud_stats
 
+        # initialise blank game board
         self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+        # create initial tetromino object
         self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
         # timers
-        self.down_speed = START_SPEED
-        self.down_speed_fast = self.down_speed * .3
+        self.down_speed = START_SPEED  # initial game speed
+        self.down_speed_fast = self.down_speed * .3  # game speed when down arrow pressed
         self.down_pressed = False
-        self.vertical_timer = Timer(START_SPEED, True, self.move_down)
+        self.vertical_timer = Timer(START_SPEED, True, self.move_down)  # timer to control vertical increments
         self.vertical_timer.start()
-        self.horizontal_timer = Timer(MAX_BUTTON_DELAY)
-        self.rotational_timer = Timer(MAX_BUTTON_DELAY)
+        self.horizontal_timer = Timer(MAX_BUTTON_DELAY)  # timer to control horizontal increments
+        self.rotational_timer = Timer(MAX_BUTTON_DELAY)  # timer to control rotational increments
 
         # score
         self.current_level = 1
@@ -32,13 +36,13 @@ class Tetris:
         self.current_lines = 0
 
     def reset_game_stats(self):
+        # reset game statistics and clear all pieces
         self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
         self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
         self.down_speed = START_SPEED
         self.down_speed_fast = self.down_speed * .3
-        # self.vertical_timer = Timer(START_SPEED, True, self.move_down)
         self.sprites.empty()
 
     def save_high_score(self):
@@ -47,6 +51,7 @@ class Tetris:
             high_scores.write(str(self.current_score) + "\n")
 
     def check_game_over(self):
+        # check if any block pieces are above game board
         for block in self.tetro.blocks:
             if block.position.y < 0:
                 # display GAME OVER
@@ -58,27 +63,30 @@ class Tetris:
                 self.reset_game_stats()
                 self.reset_hud_stats()
 
+                # return to main menu
                 reset_menu(menu_system, MENU)
                 break
 
     def create_new_tetro(self):
+        # generate new tetromino piece
         self.check_game_over()
-        self.check_for_completed_row()
+        self.check_for_completed_row()  # remove completed rows
         self.tetro = Tetros(self.get_next_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
     def move_down(self):
-        # print("time tick")
+        # move the tetromino down using move_down method from Tetros class
         self.tetro.move_down()
 
     def update_timers(self):
+        # update all timers
         self.vertical_timer.update()
         self.horizontal_timer.update()
         self.rotational_timer.update()
 
     def draw_grid(self):
+        # draw the grid on the game board
         for col in range(1, COLUMNS):
             pygame.draw.line(self.surface, (30, 30, 0), (col * GRID_SIZE, 0), (col * GRID_SIZE, HEIGHT-PADDING))
-
         for row in range(1, ROWS):
             pygame.draw.line(self.surface, (30, 30, 0), (0, row * GRID_SIZE), (GAME_WIDTH, row * GRID_SIZE))
 
@@ -101,10 +109,10 @@ class Tetris:
                 self.tetro.rotate()
                 self.rotational_timer.start()
 
+        # check if it was down and adjust drop speed accordingly
         if not self.down_pressed and user_input[pygame.K_DOWN]:
             self.down_pressed = True
             self.vertical_timer.duration = self.down_speed_fast
-
         if self.down_pressed and not user_input[pygame.K_DOWN]:
             self.down_pressed = False
             self.vertical_timer.duration = self.down_speed
@@ -123,6 +131,7 @@ class Tetris:
             if all(self.board_pieces[row]):
                 remove_rows.append(row)
 
+        # iterate through the full rows and remove the individual blocks
         if remove_rows:
             for remove_row in remove_rows:
                 # remove the completed row from board
@@ -138,9 +147,11 @@ class Tetris:
             for block in self.sprites:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
 
+            # modify the current score
             self.calculate_score(len(remove_rows))
 
     def calculate_score(self, cleared_lines):
+        # update the total lines, level, and calculate the score based on how many lines have been removed
         self.current_lines += cleared_lines
         self.current_score += SCORES[cleared_lines] * self.current_level
         if self.current_lines / 10 > self.current_level:
@@ -151,6 +162,7 @@ class Tetris:
         self.update_score(self.current_lines, self.current_score, self.current_level)
 
     def run(self):
+        # combine all relevant methods above and display on game surface
         self.user_input()
         self.update_timers()
         self.sprites.update()
@@ -160,6 +172,7 @@ class Tetris:
         self.display_surface.blit(self.surface, (PADDING, PADDING))
 
 
+# Class to handle the tetromino pieces
 class Tetros:
     def __init__(self, shape, group, create_new_tetro, board_pieces):
         self.shape = shape

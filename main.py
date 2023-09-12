@@ -6,6 +6,7 @@ from config import Config
 from utility import *
 
 
+# Main class to handle the game in its entirety
 class Main:
     def __init__(self):
         # initialise game
@@ -15,14 +16,13 @@ class Main:
         pygame.display.set_caption("2805 Tetris")
         total_window_width = 3*PADDING + GAME_WIDTH + HUD_WIDTH
         total_window_height = 2*PADDING + GAME_HEIGHT
-        print(total_window_width, total_window_height)
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
 
-        # get next shapes ready for game to begin
+        # get next shapes loaded ready for game to begin
         self.next_shapes = [get_shape() for i in range(2)]
 
-        # start game instance
+        # create hud and game objects
         self.hud = Hud()
         self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
         # self.config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
@@ -52,69 +52,73 @@ class Main:
         self.exit_btn = Button(378, 413, exit_img)
 
     def get_next_shape(self):
+        # retrieve the first shape from the list of next shapes
         next_piece = self.next_shapes.pop(0)
-
-        normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
-        extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
+        # replace popped piece for new random piece
         if EXTENDED:
             self.next_shapes.append(random.choice(extended_shapes_list))
-
         else:
             self.next_shapes.append(random.choice(normal_shapes_list))
-
-        # self.next_shapes.append(random.choice(list(TETROS.keys())))
-        print(next_piece)
         return next_piece
 
     def update_score(self, lines, score, level):
+        # update current score, lines and level
         self.hud.lines = lines
         self.hud.score = score
         self.hud.level = level
 
     def run(self):
+        # Main loop to refresh screen
         while True:
+            # check for X pressed
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit()
 
-            if menu_system[0]:  # Menu
+            if menu_system[0]:  # display Menu screen
+                # display menu background image
                 self.display_surface.blit(self.home_page, (0, 0))
+                # check for button clicks and perform actions
                 if self.play_btn.display(self.display_surface):
-                    print("Play clicked")
                     reset_menu(menu_system, GAME)
                 if self.score_btn.display(self.display_surface):
-                    print("Score clicked")
                     reset_menu(menu_system, SCORE)
                 if self.config_btn.display(self.display_surface):
-                    print("Config clicked")
                     reset_menu(menu_system, CONFIG)
                 if self.exit_btn.display(self.display_surface):
-                    print("Exit clicked")
                     reset_menu(menu_system, MENU)
                     pygame.quit()
                     exit()
-                pass
-            elif menu_system[SCORE]:  # Score
+
+            elif menu_system[SCORE]:  # display Score screen
+                # display the score background image
                 self.display_surface.blit(self.score_page, (0, 0))
+                # check for button click to return to the main menu
                 if self.return_home_btn.display(self.display_surface):
-                    print("Return clicked")
                     reset_menu(menu_system, MENU)
-            elif menu_system[CONFIG]:  # config
+
+            elif menu_system[CONFIG]:  # display Config screen
+                # display the config background image
                 self.display_surface.blit(self.config_page, (0, 0))
+                # create and run the config menu with current settings
                 config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
                 config.run()
+                # check for button clicks to perform action
                 if self.return_home_btn.display(self.display_surface):
-                    print("Return clicked")
                     reset_menu(menu_system, MENU)
-            elif menu_system[GAME]:  # game
+
+            elif menu_system[GAME]:  # Display Game screen
+                # display grey background and run game and hud
                 self.display_surface.fill("Grey15")
                 self.game.run()
                 self.hud.run(self.next_shapes)
-            elif menu_system[PAUSE]:  # pause menu
+
+            elif menu_system[PAUSE]:  # display pause menu
+                # display the pause menu background image
                 self.display_surface.blit(self.pause_page, (0, 0))
+                # check for yes/no button clicks
                 if self.yes_btn.display(self.display_surface):
-                    print("Yes clicked")
                     self.game.save_high_score()
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
@@ -122,12 +126,9 @@ class Main:
                     self.game.tetro.reset = True
                     reset_menu(menu_system, MENU)
                     menu_system[MENU] = True
-                    # restart the game
                 if self.no_btn.display(self.display_surface):
-                    print("No clicked")
                     reset_menu(menu_system, GAME)
                     menu_system[GAME] = True
-                    # restart the game
 
             pygame.display.update()
             self.clock.tick(50)

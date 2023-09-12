@@ -36,15 +36,47 @@ variables.
 
 --------------------------
 ## hud.py
+LOC: 56
+Parameters: None
+Description: The Hud class does not take any parameters when creating an object. It uses the pygame module to create and
+display a heads-up display on the game screen.
+
+The objects main attributes include score, level, lines, and shape_surfaces. The score, level, and lines are integers
+that represent the current game statistics. The shape_surfaces is a dictionary initialised in global_settings.py that 
+maps each shape name to an image that represents the shape.
+
+The object has methods such as reset_hud_stats, display_text, display_pieces, and run. The reset_hud_stats method resets
+the score, level, and lines attributes. The display_text method takes a position and text as parameters and renders the 
+text on the HUD surface at the given position. The display_pieces method takes a list of shapes as a parameter and 
+displays them on the HUD surface using the shape_surfaces dictionary. The run method takes a list of next_shapes as a 
+parameter and updates the HUD surface with the current game statistics and the next shapes. It also blits the HUD 
+surface on the display_surface at a certain position.
 
 --------------------------
 ## main.py
+LOC: 139
+Parameters: None
+Description: The Main class uses the pygame module to initialise and run the game.
+
+The objects main attributes include next_shapes, hud, game, various background images and buttons. The next_shapes is a 
+list of shapes that are generated randomly for the next pieces. The hud is a Hud object that displays the game 
+statistics on the screen. The game is a Tetris object that handles the logic and display of the game grid.
+
+The Main object has 3 methods: get_next_shape, update_score, and run. The get_next_shape method returns the first shape 
+from the next_shapes list and appends a new random shape to the list. The update_score method takes lines, score, and 
+level as parameters and updates the hud attributes with these values. The run method is the main game loop that handles 
+the events and updates the game. It controls the displaying of the different pages and buttons depending on the game 
+state. It also uses a menu_system list to keep track of which page is active.
 
 --------------------------
 ## README.md
+This file
 
 --------------------------
 ## tetris.py
 
 --------------------------
 ## timer.py
+
+--------------------------
+## utility.py

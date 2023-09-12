@@ -41,6 +41,8 @@ TETROS = {
     "I_extend": {"shape": [(1, 0), (0, 0), (2, 0)], "colour": (0, 240, 240)},  # aqua
     "J_extend": {"shape": [(0, 1), (0, 0), (1, 1)], "colour": (0, 0, 240)}  # blue
 }
+normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
+extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
 
 ## SCORE PER LINES
 SCORES = {

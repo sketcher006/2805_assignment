@@ -10,30 +10,39 @@ class Hud:
         self.display_surface = pygame.display.get_surface()
         self.font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
 
+        # game statistics
         self.score = 0
         self.level = 1
         self.lines = 0
 
-        self.shape_surfaces = {
-            shape: pygame.image.load(path.join("images", f"{shape}.png")).convert_alpha() for shape in TETROS.keys()
-        }
+        # create dictionary to store shape image previews
+        self.shape_surfaces = {}
+        shape_names = TETROS.keys()
+        for shape in shape_names:
+            image_path = path.join("images", f"{shape}.png")
+            shape_surface = pygame.image.load(image_path).convert_alpha()
+            self.shape_surfaces[shape] = shape_surface
 
     def reset_hud_stats(self):
+        # initialise game statistics
         self.score = 0
         self.level = 1
         self.lines = 0
 
     def display_text(self, position, text):
+        # display custom text at certain location
         text_surface = self.font.render(text, True, "#ffffff")
         text_rect = text_surface.get_rect(topleft=position)
         self.surface.blit(text_surface, text_rect)
 
     def display_pieces(self, shapes):
+        # loops through the 2 preview shapes and draws them onto the surface
         for i, shape in enumerate(shapes):
             shape_surface = self.shape_surfaces[shape]
             self.surface.blit(shape_surface, (50, 140+180*i))
 
     def run(self, next_shapes):
+        # runs and displays all elements of the HUD
         self.surface.fill("#000000")
         self.display_pieces(next_shapes)
         self.display_text((70, 20), "Group 17")
