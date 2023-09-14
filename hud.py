@@ -6,7 +6,7 @@ from os import path
 class Hud:
     def __init__(self):
         # Constructor, no parameters
-        self.surface = pygame.Surface((400, HUD_HEIGHT))
+        self.surface = pygame.Surface((HUD_WIDTH, HUD_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
 

@@ -123,7 +123,7 @@ class Main:
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
                     self.game.vertical_timer.duration = START_SPEED
-                    self.game.tetro.reset = True
+
                     reset_menu(menu_system, MENU)
                     menu_system[MENU] = True
                 if self.no_btn.display(self.display_surface):

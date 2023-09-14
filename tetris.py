@@ -29,6 +29,7 @@ class Tetris:
         self.vertical_timer.start()
         self.horizontal_timer = Timer(MAX_BUTTON_DELAY)  # timer to control horizontal increments
         self.rotational_timer = Timer(MAX_BUTTON_DELAY)  # timer to control rotational increments
+        self.drop_timer = Timer(MAX_BUTTON_DELAY)  # timer to control dropping tetros
 
         # score
         self.current_level = 1
@@ -82,6 +83,7 @@ class Tetris:
         self.vertical_timer.update()
         self.horizontal_timer.update()
         self.rotational_timer.update()
+        self.drop_timer.update()
 
     def draw_grid(self):
         # draw the grid on the game board
@@ -116,6 +118,12 @@ class Tetris:
         if self.down_pressed and not user_input[pygame.K_DOWN]:
             self.down_pressed = False
             self.vertical_timer.duration = self.down_speed
+
+        # check if it was space and drop tetro
+        if not self.drop_timer.started:
+            if user_input[pygame.K_SPACE]:
+                self.tetro.instant_drop()
+                self.drop_timer.start()
 
         # check if it was escape
         if user_input[pygame.K_ESCAPE]:
@@ -180,7 +188,6 @@ class Tetros:
         self.colour = TETROS[shape]["colour"]
         self.create_new_tetro = create_new_tetro
         self.board_pieces = board_pieces
-        self.reset = False
 
         self.blocks = []
         for position in self.block_positions:
@@ -188,6 +195,7 @@ class Tetros:
             self.blocks.append(block)
 
     def check_horizontal_collision(self, spaces):
+        # check if there is any potential collisions if tetro moves left or right
         collisions = []
         for block in self.blocks:
             collisions.append(block.horizontal_collide(int(block.position.x + spaces), self.board_pieces))
@@ -205,29 +213,42 @@ class Tetros:
                 return True
         return False
 
+    def instant_drop(self):
+        # drop block as far as it can go until colliding with floor or tetro
+        max_drop = 0
+        while not self.check_vertical_collision(max_drop):
+            max_drop += 1
+        # move all blocks down until the space before collision
+        for block in self.blocks:
+            block.position.y += max_drop-1
+        # update the board pieces
+        for block in self.blocks:
+            self.board_pieces[int(block.position.y)][int(block.position.x)] = block
+        self.create_new_tetro()
+
     def move_down(self):
-        # check block is within boundary
-        if not self.check_vertical_collision(1) and not self.reset:
+        # check block is within boundary and move down if so
+        if not self.check_vertical_collision(1):
             for block in self.blocks:
                 block.position.y += 1
+        # once it hits the floor or another block, set it in place and create next tetro
         else:
-            self.reset = False
             for block in self.blocks:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
             self.create_new_tetro()
 
     def move_horizontal(self, spaces):
+        # allow the tetromino to move left or right if there are no potential horizontal collisions
         if not self.check_horizontal_collision(spaces):
             for block in self.blocks:
                 block.position.x += spaces
 
     def rotate(self):
         if self.shape != 'O':
-            pivot_point = self.blocks[0].position
-
-            # new block positions
+            pivot_point = self.blocks[0].position  # central block that piece will pivot around
+            # get new positions of individual blocks after rotation
             new_block_positions = [block.rotate(pivot_point) for block in self.blocks]
-
+            # update block positions accordingly
             for i, block in enumerate(self.blocks):
                 block.position = new_block_positions[i]
 
@@ -246,25 +267,27 @@ class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
-        # get pos to update rect
-        # self.rect = self.image.get_rect(topleft=self.position * GRID_SIZE)
+        # update position of block
         self.rect.topleft = self.position * GRID_SIZE
 
     def horizontal_collide(self, x_coord, board_pieces):
+        # check collision with left and right walls
         if not 0 <= x_coord < COLUMNS:
             return True
-
+        # check collision with other tetrominos
         if board_pieces[int(self.position.y)][x_coord]:
             return True
 
     def vertical_collide(self, y_coord, board_pieces):
+        # check collision with floor
         if y_coord >= ROWS:
             return True
-
+        # check collision with other tetrominos
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:
             return True
 
     def rotate(self, pivot_point):
+        # find new positions for individual blocks around pivot point
         distance = self.position - pivot_point
         rotated = distance.rotate(90)
         new_position = pivot_point + rotated
