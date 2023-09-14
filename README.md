@@ -77,6 +77,22 @@ This file
 
 --------------------------
 ## timer.py
+LOC: 36
+Parameters: duration, repeated, func
+Description: This is a simple timer class to handle cases pertinent to time. The duration parameter determines how long 
+the time will run before something can happen, repeated is whether the timer starts itself again after the specified 
+duration and if a function has been included in the parameter, it can be called at the end of the duration. The timer 
+class has been used to control vertical speed, horizontal keypress speed, and rotational keypress speed. The vertical 
+timer repeats itself continuously and performs the function move_down after each duration, controlling the gameplay 
+speed.
+
+The Timer class has three methods, start, stop and update. Start and stop are self-explanatory, update however is called 
+on each new frame and checks if the duration has been served. If so, the timer will be stopped, a function may be run, 
+and the timer may be repeated.
 
 --------------------------
 ## utility.py
+LOC: 23
+Parameters: menu, destination
+Description: Two global functions are contained here, reset_menu and get_shape. reset_menu is used to clear the menu and
+re-assign a new menu option. get_shape is used to randomly choose a new tetromino shape from the available selection. 

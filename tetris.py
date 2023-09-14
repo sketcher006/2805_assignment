@@ -11,7 +11,7 @@ class Tetris:
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
-        self.sprites = pygame.sprite.Group()
+        self.sprites = pygame.sprite.Group()  # group for sprites
         self.update_score = update_score
         self.get_next_shape = get_next_shape
         self.reset_hud_stats = reset_hud_stats
@@ -95,7 +95,7 @@ class Tetris:
         user_input = pygame.key.get_pressed()
 
         # check if it was left or right
-        if not self.horizontal_timer.active:
+        if not self.horizontal_timer.started:
             if user_input[pygame.K_LEFT]:
                 self.tetro.move_horizontal(-1)
                 self.horizontal_timer.start()
@@ -104,7 +104,7 @@ class Tetris:
                 self.horizontal_timer.start()
 
         # check if it was up
-        if not self.rotational_timer.active:
+        if not self.rotational_timer.started:
             if user_input[pygame.K_UP]:
                 self.tetro.rotate()
                 self.rotational_timer.start()
@@ -172,11 +172,11 @@ class Tetris:
         self.display_surface.blit(self.surface, (PADDING, PADDING))
 
 
-# Class to handle the tetromino pieces
+# Class to handle the tetromino (groups of individual block sprites)
 class Tetros:
     def __init__(self, shape, group, create_new_tetro, board_pieces):
         self.shape = shape
-        self.block_positions = TETROS[shape]["shape"]
+        self.block_positions = TETROS[shape]["shape"]  # retrieve tetromino shapes from global_settings
         self.colour = TETROS[shape]["colour"]
         self.create_new_tetro = create_new_tetro
         self.board_pieces = board_pieces
@@ -210,8 +210,6 @@ class Tetros:
         if not self.check_vertical_collision(1) and not self.reset:
             for block in self.blocks:
                 block.position.y += 1
-                # print(block.rect.y)
-            # print("move down")
         else:
             self.reset = False
             for block in self.blocks:
@@ -224,7 +222,6 @@ class Tetros:
                 block.position.x += spaces
 
     def rotate(self):
-        # print("rotate")
         if self.shape != 'O':
             pivot_point = self.blocks[0].position
 
@@ -235,12 +232,14 @@ class Tetros:
                 block.position = new_block_positions[i]
 
 
-class Block(pygame.sprite.Sprite):
+# Class to handle the individual blocks of a tetromino
+class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
     def __init__(self, group, position, colour):
+        # Constructor, parameters group, position and colour
+        # creates a block sprite and assign it to a sprite group at a certain location
         super().__init__(group)
         self.image = pygame.Surface((GRID_SIZE, GRID_SIZE))
         self.image.fill(colour)
-
         self.position = pygame.Vector2(position) + pygame.Vector2(COLUMNS//2-2, -2)  # set to roughly centre
         x = self.position.x * GRID_SIZE
         y = self.position.y * GRID_SIZE
