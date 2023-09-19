@@ -9,21 +9,26 @@ HEIGHT = 840
 PADDING = 20
 
 ## GAME
-COLUMNS = 10
-ROWS = 20
-GRID_SIZE = 40
-GAME_WIDTH = COLUMNS * GRID_SIZE
-GAME_HEIGHT = ROWS * GRID_SIZE
+GAME_WIDTH = 400
+GAME_HEIGHT = 800
+                #cols, rows, grid_size
+game_size_normal = (10, 20, 40)
+game_size_small = (8, 16, 50)
+game_size_large = (16, 32, 25)
+current_game_size = game_size_small
+GAME_COLS = 0
+GAME_ROWS = 1
+GAME_GRID = 2
 
 ## HUD
 HUD_WIDTH = 250
-HUD_HEIGHT = GAME_HEIGHT
+HUD_HEIGHT = 800
 
 ## EXTENDED
-EXTENDED = False
+extended = False
 
 ## HUMAN or AI
-HUMAN = True
+human = True
 
 ## TETRO SHAPES
 TETROS = {
@@ -41,8 +46,8 @@ TETROS = {
     "I_extend": {"shape": [(1, 0), (0, 0), (2, 0)], "colour": (0, 240, 240)},  # aqua
     "J_extend": {"shape": [(0, 1), (0, 0), (1, 1)], "colour": (0, 0, 240)}  # blue
 }
-normal_shapes_list = ["I", "J", "L", "O", "S", "T", "Z"]
-extended_shapes_list = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
+NORMAL_SHAPES_LIST = ["I", "J", "L", "O", "S", "T", "Z"]
+EXTENDED_SHAPES_LIST = ["I", "J", "L", "O", "S", "T", "Z", "I_extend", "J_extend"]
 
 ## SCORE PER LINES
 SCORES = {
@@ -53,7 +58,7 @@ SCORES = {
 }
 
 ## START SETTINGS
-START_SPEED = 200
+start_speed = 200
 MAX_BUTTON_DELAY = 150
 
 MENU = 0
@@ -61,7 +66,6 @@ SCORE = 1
 CONFIG = 2
 GAME = 3
 PAUSE = 4
-
 
 #             [menu, score, confg, game, pause]
 menu_system = [True, False, False, False, False]

@@ -51,6 +51,6 @@ class Hud:
         self.display_text((20, 550), f"Score: {self.score}")
         self.display_text((20, 600), f"Lines: {self.lines}")
         self.display_text((20, 650), f"Level: {self.level}")
-        self.display_text((20, 700), f"Extended: {EXTENDED}")
+        self.display_text((20, 700), f"Extended: {extended}")
         self.display_text((20, 750), f"Mode: Human")
         self.display_surface.blit(self.surface, (2 * PADDING + GAME_WIDTH, PADDING))

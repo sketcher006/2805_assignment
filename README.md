@@ -22,7 +22,7 @@ executed.
 --------------------------
 
 ### config.py
-LOC: 33
+LOC: 39
 Parameters: game_size, game_level, normal_extended, game_mode
 Description: This class is used to display the game configuration settings in the Config menu. The parameters game_size
 represents the size of the game grid, game_level is the current level of the game, normal_extended is a boolean 
@@ -31,7 +31,7 @@ representing normal pieces or extended pieces, and game_mode is either human or 
 --------------------------
 
 ### global_settings.py
-LOC: 65
+LOC: 71
 Parameters: NA
 Description: Initialises important variables used throughout the game, including screen dimensions, game size, 
 game mode, extended pieces, tetromino shapes, points awarded for line completions, timer speeds and menu control 
@@ -59,7 +59,7 @@ surface on the display_surface at a certain position.
 --------------------------
 
 ### main.py
-LOC: 139
+LOC: 135
 Parameters: None
 Description: The Main class uses the pygame module to initialise and run the game.
 
@@ -81,7 +81,7 @@ This file
 --------------------------
 
 ### tetris.py
-LOC: 296
+LOC: 307
 Contains three classes: Tetris, Tetro, Block. A block is a single square of a tetromino, a tetromino is a group of 
 blocks arranged in a certain way, and tetris is a group of tetrominos controllable by the user.
 
@@ -208,7 +208,7 @@ re-assign a new menu option. get_shape is used to randomly choose a new tetromin
 
 --------------------------
 
-Total LOC: 678
+Total LOC: 697
 
 --------------------------
 

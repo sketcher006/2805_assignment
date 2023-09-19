@@ -16,15 +16,17 @@ class Tetris:
         self.reset_hud_stats = reset_hud_stats
 
         # initialise blank game board
-        self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+        self.board_pieces = (
+            [[0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])]
+        )
         # create initial tetromino object
         self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
         # timers
-        self.down_speed = START_SPEED  # initial game speed
+        self.down_speed = start_speed  # initial game speed
         self.down_speed_fast = self.down_speed * .3  # game speed when down arrow pressed
         self.down_pressed = False
-        self.vertical_timer = Timer(START_SPEED, True, self.move_down)  # timer to control vertical increments
+        self.vertical_timer = Timer(start_speed, True, self.move_down)  # timer to control vertical increments
         self.vertical_timer.start()
         self.horizontal_timer = Timer(MAX_BUTTON_DELAY)  # timer to control horizontal increments
         self.rotational_timer = Timer(MAX_BUTTON_DELAY)  # timer to control rotational increments
@@ -40,8 +42,11 @@ class Tetris:
         self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
-        self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
-        self.down_speed = START_SPEED
+        self.board_pieces = [
+            [0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])
+        ]
+        self.down_speed = start_speed
+        self.vertical_timer.duration = start_speed
         self.down_speed_fast = self.down_speed * .3
         self.sprites.empty()
 
@@ -86,10 +91,14 @@ class Tetris:
 
     def draw_grid(self):
         # draw the grid on the game board
-        for col in range(1, COLUMNS):
-            pygame.draw.line(self.surface, (30, 30, 0), (col * GRID_SIZE, 0), (col * GRID_SIZE, HEIGHT-PADDING))
-        for row in range(1, ROWS):
-            pygame.draw.line(self.surface, (30, 30, 0), (0, row * GRID_SIZE), (GAME_WIDTH, row * GRID_SIZE))
+        for col in range(1, current_game_size[GAME_COLS]):
+            pygame.draw.line(
+                self.surface, (30, 30, 0), (col * current_game_size[GAME_GRID], 0),
+                (col * current_game_size[GAME_GRID], HEIGHT-PADDING))
+        for row in range(1, current_game_size[GAME_ROWS]):
+            pygame.draw.line(
+                self.surface, (30, 30, 0), (0, row * current_game_size[GAME_GRID]),
+                (GAME_WIDTH, row * current_game_size[GAME_GRID]))
 
     def user_input(self):
         # get user input key pressed
@@ -150,7 +159,9 @@ class Tetris:
                         if block and block.position.y < remove_row:
                             block.position.y += 1
             # rebuild the board_pieces array
-            self.board_pieces = [[0 for i in range(COLUMNS)] for j in range(ROWS)]
+            self.board_pieces = [
+                [0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])
+            ]
             for block in self.sprites:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
 
@@ -260,20 +271,21 @@ class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
     def __init__(self, group, position, colour):
         # Constructor, parameters group (of sprites), position (x, y) and colour
         super().__init__(group)
-        self.image = pygame.Surface((GRID_SIZE, GRID_SIZE))
+        self.image = pygame.Surface((current_game_size[GAME_GRID], current_game_size[GAME_GRID]))
         self.image.fill(colour)
-        self.position = pygame.Vector2(position) + pygame.Vector2(COLUMNS//2-2, -2)  # set to roughly centre
-        x = self.position.x * GRID_SIZE
-        y = self.position.y * GRID_SIZE
+        self.position = (pygame.Vector2(position) +
+                         pygame.Vector2(current_game_size[GAME_COLS]//2-2, -2))  # set to roughly centre
+        x = self.position.x * current_game_size[GAME_GRID]
+        y = self.position.y * current_game_size[GAME_GRID]
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         # update position of block
-        self.rect.topleft = self.position * GRID_SIZE
+        self.rect.topleft = self.position * current_game_size[GAME_GRID]
 
     def horizontal_collide(self, x_coord, board_pieces):
         # check collision with left and right walls
-        if not 0 <= x_coord < COLUMNS:
+        if not 0 <= x_coord < current_game_size[GAME_COLS]:
             return True
         # check collision with other tetrominos
         if board_pieces[int(self.position.y)][x_coord]:
@@ -281,7 +293,7 @@ class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
 
     def vertical_collide(self, y_coord, board_pieces):
         # check collision with floor
-        if y_coord >= ROWS:
+        if y_coord >= current_game_size[GAME_ROWS]:
             return True
         # check collision with other tetrominos
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:

@@ -13,11 +13,11 @@ def reset_menu(menu, destination):
 
 def get_shape():
     # return a random shape from shapes list
-    print("extended:", EXTENDED)
+    print("extended:", extended)
 
-    if EXTENDED:
-        random_shape = random.choice(extended_shapes_list)
+    if extended:
+        random_shape = random.choice(EXTENDED_SHAPES_LIST)
     else:
-        random_shape = random.choice(normal_shapes_list)
+        random_shape = random.choice(NORMAL_SHAPES_LIST)
     print(random_shape)
     return random_shape

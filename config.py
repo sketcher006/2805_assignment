@@ -8,8 +8,8 @@ from os import path
 class Config:
     # Constructor, parameters game_size (size of the game grid), game_level (current game level), normal_extended
     # (boolean representing normal pieces or extended pieces), game_mode (human or AI)
-    def __init__(self, game_size, game_level, normal_extended, game_mode):
-        self.game_size = game_size
+    def __init__(self, game_level, normal_extended, game_mode):
+        self.game_size = current_game_size
         self.game_level = game_level
         self.normal_extended = normal_extended
         self.game_mode = game_mode
@@ -27,7 +27,11 @@ class Config:
         text = "Extended" if self.normal_extended else "Normal"
         mode = "Human" if self.game_mode else "AI"
 
-        self.display_text((60, 200), f"Game size: {int(self.game_size[0]/GRID_SIZE)} x {int(self.game_size[1]/GRID_SIZE)}")
+        self.display_text(
+            (60, 200),
+            f"Game size: {int(self.game_size[GAME_COLS])} x "
+            f"{int(self.game_size[GAME_ROWS])}"
+        )
         self.display_text((60, 300), f"Level: {self.game_level}")
 
         self.display_text((60, 400), f"Normal/Extended: {text}")

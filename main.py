@@ -25,7 +25,6 @@ class Main:
         # create hud and game objects
         self.hud = Hud()
         self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
-        # self.config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
 
         # load background image files
         self.home_page = pygame.image.load(path.join("images", "home.png")).convert_alpha()
@@ -55,10 +54,10 @@ class Main:
         # retrieve the first shape from the list of next shapes
         next_piece = self.next_shapes.pop(0)
         # replace popped piece for new random piece
-        if EXTENDED:
-            self.next_shapes.append(random.choice(extended_shapes_list))
+        if extended:
+            self.next_shapes.append(random.choice(EXTENDED_SHAPES_LIST))
         else:
-            self.next_shapes.append(random.choice(normal_shapes_list))
+            self.next_shapes.append(random.choice(NORMAL_SHAPES_LIST))
         return next_piece
 
     def update_score(self, lines, score, level):
@@ -102,7 +101,7 @@ class Main:
                 # display the config background image
                 self.display_surface.blit(self.config_page, (0, 0))
                 # create and run the config menu with current settings
-                config = Config((GAME_WIDTH, GAME_HEIGHT), self.game.current_level, EXTENDED, HUMAN)
+                config = Config(self.game.current_level, extended, human)
                 config.run()
                 # check for button clicks to perform action
                 if self.return_home_btn.display(self.display_surface):
@@ -122,13 +121,10 @@ class Main:
                     self.game.save_high_score()
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
-                    self.game.vertical_timer.duration = START_SPEED
 
                     reset_menu(menu_system, MENU)
-                    menu_system[MENU] = True
                 if self.no_btn.display(self.display_surface):
                     reset_menu(menu_system, GAME)
-                    menu_system[GAME] = True
 
             pygame.display.update()
             self.clock.tick(50)
