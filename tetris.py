@@ -1,4 +1,3 @@
-# from global_settings import *
 from timer import Timer
 from os import path
 from utility import *
@@ -183,6 +182,8 @@ class Tetris:
 # Class to handle the tetromino (groups of individual block sprites)
 class Tetros:
     def __init__(self, shape, group, create_new_tetro, board_pieces):
+        # Constructor, parameters shape (tetromino shape), group (of sprites), create_new_tetro (function from Tetris
+        # class) and board pieces (array representing the board)
         self.shape = shape
         self.block_positions = TETROS[shape]["shape"]  # retrieve tetromino shapes from global_settings
         self.colour = TETROS[shape]["colour"]
@@ -205,6 +206,7 @@ class Tetros:
         return False
 
     def check_vertical_collision(self, spaces):
+        # check if there is any potential collisions if tetro moves down
         collisions = []
         for block in self.blocks:
             collisions.append(block.vertical_collide(int(block.position.y + spaces), self.board_pieces))
@@ -221,7 +223,7 @@ class Tetros:
         # move all blocks down until the space before collision
         for block in self.blocks:
             block.position.y += max_drop-1
-        # update the board pieces
+        # update the board pieces array
         for block in self.blocks:
             self.board_pieces[int(block.position.y)][int(block.position.x)] = block
         self.create_new_tetro()
@@ -256,8 +258,7 @@ class Tetros:
 # Class to handle the individual blocks of a tetromino
 class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
     def __init__(self, group, position, colour):
-        # Constructor, parameters group, position and colour
-        # creates a block sprite and assign it to a sprite group at a certain location
+        # Constructor, parameters group (of sprites), position (x, y) and colour
         super().__init__(group)
         self.image = pygame.Surface((GRID_SIZE, GRID_SIZE))
         self.image.fill(colour)
