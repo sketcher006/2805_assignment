@@ -75,29 +75,29 @@ class Main:
                     pygame.quit()
                     exit()
 
-            if menu_system[0]:  # display Menu screen
+            if menu_system["Menu"]:  # display Menu screen
                 # display menu background image
                 self.display_surface.blit(self.home_page, (0, 0))
                 # check for button clicks and perform actions
                 if self.play_btn.display(self.display_surface):
-                    reset_menu(menu_system, GAME)
+                    reset_menu("Game")
                 if self.score_btn.display(self.display_surface):
-                    reset_menu(menu_system, SCORE)
+                    reset_menu("Score")
                 if self.config_btn.display(self.display_surface):
-                    reset_menu(menu_system, CONFIG)
+                    reset_menu("Config")
                 if self.exit_btn.display(self.display_surface):
-                    reset_menu(menu_system, MENU)
+                    reset_menu("Menu")
                     pygame.quit()
                     exit()
 
-            elif menu_system[SCORE]:  # display Score screen
+            elif menu_system["Score"]:  # display Score screen
                 # display the score background image
                 self.display_surface.blit(self.score_page, (0, 0))
                 # check for button click to return to the main menu
                 if self.return_home_btn.display(self.display_surface):
-                    reset_menu(menu_system, MENU)
+                    reset_menu("Menu")
 
-            elif menu_system[CONFIG]:  # display Config screen
+            elif menu_system["Config"]:  # display Config screen
                 # display the config background image
                 self.display_surface.blit(self.config_page, (0, 0))
                 # create and run the config menu with current settings
@@ -105,15 +105,15 @@ class Main:
                 config.run()
                 # check for button clicks to perform action
                 if self.return_home_btn.display(self.display_surface):
-                    reset_menu(menu_system, MENU)
+                    reset_menu("Menu")
 
-            elif menu_system[GAME]:  # Display Game screen
+            elif menu_system["Game"]:  # Display Game screen
                 # display grey background and run game and hud
                 self.display_surface.fill("Grey15")
                 self.game.run()
                 self.hud.run(self.next_shapes)
 
-            elif menu_system[PAUSE]:  # display pause menu
+            elif menu_system["Pause"]:  # display pause menu
                 # display the pause menu background image
                 self.display_surface.blit(self.pause_page, (0, 0))
                 # check for yes/no button clicks
@@ -122,9 +122,9 @@ class Main:
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
 
-                    reset_menu(menu_system, MENU)
+                    reset_menu("Menu")
                 if self.no_btn.display(self.display_surface):
-                    reset_menu(menu_system, GAME)
+                    reset_menu("Game")
 
             pygame.display.update()
             self.clock.tick(50)

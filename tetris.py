@@ -69,7 +69,7 @@ class Tetris:
                 self.reset_hud_stats()
 
                 # return to main menu
-                reset_menu(menu_system, MENU)
+                reset_menu("Menu")
                 break
 
     def create_new_tetro(self):
@@ -138,7 +138,8 @@ class Tetris:
             print("Escape pressed")
             print("down speed", self.down_speed)
             print("vert timer", self.vertical_timer.duration)
-            reset_menu(menu_system, PAUSE)
+            print("drop timer", self.drop_timer.start_time)
+            reset_menu("Pause")
 
     def check_for_completed_row(self):
         # get index of any full row

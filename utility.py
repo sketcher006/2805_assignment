@@ -4,11 +4,12 @@ import random
 
 # Global utility functions
 
-def reset_menu(menu, destination):
-    # clear menu option
-    for i in range(len(menu)):
-        menu[i] = False
-    menu[destination] = True
+def reset_menu(destination):
+    for key in menu_system:
+        if key == destination:
+            menu_system[key] = True
+        else:
+            menu_system[key] = False
 
 
 def get_shape():

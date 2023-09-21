@@ -61,11 +61,20 @@ SCORES = {
 start_speed = 200
 MAX_BUTTON_DELAY = 150
 
-MENU = 0
-SCORE = 1
-CONFIG = 2
-GAME = 3
-PAUSE = 4
+# MENU = 0
+# SCORE = 1
+# CONFIG = 2
+# GAME = 3
+# PAUSE = 4
 
 #             [menu, score, confg, game, pause]
-menu_system = [True, False, False, False, False]
+# menu_system = [True, False, False, False, False]
+
+menu_system = {
+    "Menu": True,
+    "Score": False,
+    "Config": False,
+    "Game": False,
+    "Pause": False
+}
+
