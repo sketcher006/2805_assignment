@@ -1,10 +1,10 @@
-from global_settings import *
+from global_settings import pygame
 
 
-# Class to manage timers for the game
 class Timer:
+    """Class to manage timers for the game"""
     def __init__(self, duration, repeated=False, func=None):
-        # Constructor, parameters duration, repeated and func
+        """Constructor, parameters duration, repeated and func"""
         self.repeated = repeated
         self.func = func
         self.duration = duration
@@ -13,17 +13,17 @@ class Timer:
         self.started = False
 
     def start(self):
-        # start the timer
+        """start the timer"""
         self.started = True
         self.start_time = pygame.time.get_ticks()
 
     def stop(self):
-        # stop the timer
+        """stop the timer"""
         self.started = False
         self.start_time = 0
 
     def update(self):
-        # update the time within the timer to check duration
+        """update the time within the timer to check duration"""
         current_time = pygame.time.get_ticks()
         if self.started:
             if current_time - self.start_time >= self.duration:

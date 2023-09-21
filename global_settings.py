@@ -16,19 +16,19 @@ GAME_COLS = 0
 GAME_ROWS = 1
 GAME_GRID = 2
 # cols, rows, grid_size
-game_size_normal = (10, 20, 40)
-game_size_small = (8, 16, 50)
-game_size_large = (16, 32, 25)
-current_game_size = game_size_small
+GAME_SIZE_NORMAL = (10, 20, 40)
+GAME_SIZE_SMALL = (8, 16, 50)
+GAME_SIZE_LARGE = (16, 32, 25)
+current_game_size = GAME_SIZE_NORMAL
 
 ## HUD
 HUD_WIDTH = 250
 HUD_HEIGHT = 800
 
-## EXTENDED
+## EXTENDED (extended == True uses additional pieces)
 extended = False
 
-## HUMAN or AI
+## HUMAN or AI (human == True means the human controls the game, otherwise the ai will control it)
 human = True
 
 ## TETRO SHAPES
@@ -59,10 +59,10 @@ SCORES = {
 }
 
 ## START SETTINGS
-start_speed = 200
-MAX_BUTTON_DELAY = 150
+start_speed = 200  # milliseconds between vertical drop time
+MAX_BUTTON_DELAY = 150  # milliseconds between the fastest time allowed between key presses
 
-menu_system = {
+menu_system = {  # Dictionary to control which page is displayed
     "Menu": True,
     "Score": False,
     "Config": False,

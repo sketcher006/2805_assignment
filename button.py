@@ -1,17 +1,17 @@
-from global_settings import *
+from global_settings import pygame
 
 
-# Class to handle button objects
 class Button:
+    """Class to handle button objects"""
     def __init__(self, x, y, image):
-        # Constructor, parameters x, y (coords) and image (file location)
+        """Constructor, parameters x, y (coords) and image (file location)"""
         self.image = image
         self.rect = image.get_rect()
         self.rect.topleft = (x, y)
         self.clicked = False
 
     def display(self, screen):
-        # method to display the button and check for interaction
+        """method to display the button and check for interaction"""
         action = False
         mouse_pos = pygame.mouse.get_pos()
 

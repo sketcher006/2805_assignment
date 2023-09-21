@@ -3,10 +3,10 @@ from os import path
 from utility import *
 
 
-# Class to handle the main logic and gameplay controller
 class Tetris:
-    # Constructor, parameters include callback functions update_score, get_next_shape, and reset_hud_stats
+    """Class to handle the main logic and gameplay controller"""
     def __init__(self, update_score, get_next_shape, reset_hud_stats):
+        """Constructor, parameters include callback functions update_score, get_next_shape, and reset_hud_stats"""
         self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
         self.display_surface = pygame.display.get_surface()
         self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
@@ -38,7 +38,7 @@ class Tetris:
         self.current_lines = 0
 
     def reset_game_stats(self):
-        # reset game statistics and clear all pieces
+        """reset game statistics and clear all pieces"""
         self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
@@ -51,12 +51,12 @@ class Tetris:
         self.sprites.empty()
 
     def save_high_score(self):
-        # save high score to external file
+        """save high score to external file"""
         with open(path.join("assets", "high_scores.txt"), 'a') as high_scores:
             high_scores.write(str(self.current_score) + "\n")
 
     def check_game_over(self):
-        # check if any block pieces are above game board
+        """check if any block pieces are above game board"""
         for block in self.tetro.blocks:
             if block.position.y < 0:
                 # display GAME OVER
@@ -73,13 +73,13 @@ class Tetris:
                 break
 
     def create_new_tetro(self):
-        # generate new tetromino piece
+        """generate new tetromino piece"""
         self.check_game_over()
         self.check_for_completed_row()  # remove completed rows
         self.tetro = Tetros(self.get_next_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
     def move_down(self):
-        # move the tetromino down using move_down method from Tetros class
+        """move the tetromino down using move_down method from Tetros class"""
         self.tetro.move_down()
 
     def update_timers(self):
@@ -90,7 +90,7 @@ class Tetris:
         self.drop_timer.update()
 
     def draw_grid(self):
-        # draw the grid on the game board
+        """draw the grid on the game board"""
         for col in range(1, current_game_size[GAME_COLS]):
             pygame.draw.line(
                 self.surface, (30, 30, 0), (col * current_game_size[GAME_GRID], 0),
@@ -101,7 +101,7 @@ class Tetris:
                 (GAME_WIDTH, row * current_game_size[GAME_GRID]))
 
     def user_input(self):
-        # get user input key pressed
+        """get user input key pressed"""
         user_input = pygame.key.get_pressed()
 
         # check if it was left or right
@@ -142,7 +142,7 @@ class Tetris:
             reset_menu("Pause")
 
     def check_for_completed_row(self):
-        # get index of any full row
+        """get index of any full row"""
         remove_rows = []
         for row in range(len(self.board_pieces)):
             if all(self.board_pieces[row]):
@@ -170,7 +170,7 @@ class Tetris:
             self.calculate_score(len(remove_rows))
 
     def calculate_score(self, cleared_lines):
-        # update the total lines, level, and calculate the score based on how many lines have been removed
+        """update the total lines, level, and calculate the score based on how many lines have been removed"""
         self.current_lines += cleared_lines
         self.current_score += SCORES[cleared_lines] * self.current_level
         if self.current_lines / 10 > self.current_level:
@@ -181,7 +181,7 @@ class Tetris:
         self.update_score(self.current_lines, self.current_score, self.current_level)
 
     def run(self):
-        # combine all relevant methods above and display on game surface
+        """combine all relevant methods above and display on game surface"""
         self.user_input()
         self.update_timers()
         self.sprites.update()
@@ -191,11 +191,11 @@ class Tetris:
         self.display_surface.blit(self.surface, (PADDING, PADDING))
 
 
-# Class to handle the tetromino (groups of individual block sprites)
 class Tetros:
+    """Class to handle the tetrominos (groups of individual block sprites)"""
     def __init__(self, shape, group, create_new_tetro, board_pieces):
-        # Constructor, parameters shape (tetromino shape), group (of sprites), create_new_tetro (function from Tetris
-        # class) and board pieces (array representing the board)
+        """Constructor, parameters shape (tetromino shape), group (of sprites), create_new_tetro (function from Tetris
+        class) and board pieces (array representing the board)"""
         self.shape = shape
         self.block_positions = TETROS[shape]["shape"]  # retrieve tetromino shapes from global_settings
         self.colour = TETROS[shape]["colour"]
@@ -208,7 +208,7 @@ class Tetros:
             self.blocks.append(block)
 
     def check_horizontal_collision(self, spaces):
-        # check if there is any potential collisions if tetro moves left or right
+        """check if there is any potential collisions if tetro moves left or right"""
         collisions = []
         for block in self.blocks:
             collisions.append(block.horizontal_collide(int(block.position.x + spaces), self.board_pieces))
@@ -218,7 +218,7 @@ class Tetros:
         return False
 
     def check_vertical_collision(self, spaces):
-        # check if there is any potential collisions if tetro moves down
+        """check if there is any potential collisions if tetro moves down"""
         collisions = []
         for block in self.blocks:
             collisions.append(block.vertical_collide(int(block.position.y + spaces), self.board_pieces))
@@ -228,7 +228,7 @@ class Tetros:
         return False
 
     def instant_drop(self):
-        # drop block as far as it can go until colliding with floor or tetro
+        """drop block as far as it can go until colliding with floor or tetro"""
         max_drop = 0
         while not self.check_vertical_collision(max_drop):
             max_drop += 1
@@ -241,7 +241,7 @@ class Tetros:
         self.create_new_tetro()
 
     def move_down(self):
-        # check block is within boundary and move down if so
+        """check block is within boundary and move down if so"""
         if not self.check_vertical_collision(1):
             for block in self.blocks:
                 block.position.y += 1
@@ -252,12 +252,13 @@ class Tetros:
             self.create_new_tetro()
 
     def move_horizontal(self, spaces):
-        # allow the tetromino to move left or right if there are no potential horizontal collisions
+        """allow the tetromino to move left or right if there are no potential horizontal collisions"""
         if not self.check_horizontal_collision(spaces):
             for block in self.blocks:
                 block.position.x += spaces
 
     def rotate(self):
+        """rotates the tetro by 90 degrees clockwise"""
         if self.shape != 'O':
             pivot_point = self.blocks[0].position  # central block that piece will pivot around
             # get new positions of individual blocks after rotation
@@ -267,8 +268,8 @@ class Tetros:
                 block.position = new_block_positions[i]
 
 
-# Class to handle the individual blocks of a tetromino
 class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
+    """Class to handle the individual blocks of a tetromino"""
     def __init__(self, group, position, colour):
         # Constructor, parameters group (of sprites), position (x, y) and colour
         super().__init__(group)
@@ -281,27 +282,27 @@ class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
-        # update position of block
+        """update position of block"""
         self.rect.topleft = self.position * current_game_size[GAME_GRID]
 
     def horizontal_collide(self, x_coord, board_pieces):
-        # check collision with left and right walls
+        """check collision with left and right walls"""
         if not 0 <= x_coord < current_game_size[GAME_COLS]:
             return True
-        # check collision with other tetrominos
+        """check collision with other tetrominos"""
         if board_pieces[int(self.position.y)][x_coord]:
             return True
 
     def vertical_collide(self, y_coord, board_pieces):
-        # check collision with floor
+        """check collision with floor"""
         if y_coord >= current_game_size[GAME_ROWS]:
             return True
-        # check collision with other tetrominos
+        """check collision with other tetrominos"""
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:
             return True
 
     def rotate(self, pivot_point):
-        # find new positions for individual blocks around pivot point
+        """find new positions for individual blocks around pivot point"""
         distance = self.position - pivot_point
         rotated = distance.rotate(90)
         new_position = pivot_point + rotated

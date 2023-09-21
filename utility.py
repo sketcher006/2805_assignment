@@ -5,6 +5,7 @@ import random
 # Global utility functions
 
 def reset_menu(destination):
+    """set current visible page to destination"""
     for key in menu_system:
         if key == destination:
             menu_system[key] = True
@@ -13,7 +14,7 @@ def reset_menu(destination):
 
 
 def get_shape():
-    # return a random shape from shapes list
+    """return a random shape from shapes list"""
     print("extended:", extended)
 
     if extended:

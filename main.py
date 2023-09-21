@@ -6,10 +6,10 @@ from config import Config
 from utility import *
 
 
-# Main class to handle the game in its entirety
 class Main:
+    """Main class to handle the game in its entirety"""
     def __init__(self):
-        # initialise game
+        """initialise game"""
         pygame.init()
         icon = pygame.image.load(path.join("images", "icon.png"))
         pygame.display.set_icon(icon)
@@ -51,7 +51,7 @@ class Main:
         self.exit_btn = Button(378, 413, exit_img)
 
     def get_next_shape(self):
-        # retrieve the first shape from the list of next shapes
+        """retrieve the first shape from the list of next shapes"""
         next_piece = self.next_shapes.pop(0)
         # replace popped piece for new random piece
         if extended:
@@ -61,13 +61,13 @@ class Main:
         return next_piece
 
     def update_score(self, lines, score, level):
-        # update current score, lines and level
+        """update current score, lines and level"""
         self.hud.lines = lines
         self.hud.score = score
         self.hud.level = level
 
     def run(self):
-        # Main loop to refresh screen
+        """Main loop to refresh screen"""
         while True:
             # check for X pressed
             for event in pygame.event.get():
