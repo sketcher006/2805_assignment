@@ -1,4 +1,4 @@
-from global_settings import *
+import global_settings
 import random
 
 
@@ -6,20 +6,20 @@ import random
 
 def reset_menu(destination):
     """set current visible page to destination"""
-    for key in menu_system:
+    for key in global_settings.menu_system:
         if key == destination:
-            menu_system[key] = True
+            global_settings.menu_system[key] = True
         else:
-            menu_system[key] = False
+            global_settings.menu_system[key] = False
 
 
 def get_shape():
     """return a random shape from shapes list"""
-    print("extended:", extended)
+    print("extended:", global_settings.extended)
 
-    if extended:
-        random_shape = random.choice(EXTENDED_SHAPES_LIST)
+    if global_settings.extended:
+        random_shape = random.choice(global_settings.EXTENDED_SHAPES_LIST)
     else:
-        random_shape = random.choice(NORMAL_SHAPES_LIST)
+        random_shape = random.choice(global_settings.NORMAL_SHAPES_LIST)
     print(random_shape)
     return random_shape

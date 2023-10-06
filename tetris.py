@@ -2,41 +2,57 @@ from timer import Timer
 from os import path
 from utility import *
 import pygame.locals as pg_locals
+from os.path import join
 
 
 class Tetris:
     """Class to handle the main logic and gameplay controller"""
     def __init__(self, update_score, get_next_shape, reset_hud_stats):
         """Constructor, parameters include callback functions update_score, get_next_shape, and reset_hud_stats"""
-        self.surface = pygame.Surface((GAME_WIDTH, GAME_HEIGHT))
-        self.display_surface = pygame.display.get_surface()
-        self.rect = self.surface.get_rect(topleft=(PADDING, PADDING))
-        self.sprites = pygame.sprite.Group()  # group for sprites
+        self.surface = global_settings.pygame.Surface((global_settings.GAME_WIDTH, global_settings.GAME_HEIGHT))
+        self.display_surface = global_settings.pygame.display.get_surface()
+        self.rect = self.surface.get_rect(topleft=(global_settings.PADDING, global_settings.PADDING))
+        self.sprites = global_settings.pygame.sprite.Group()  # group for sprites
         self.update_score = update_score
         self.get_next_shape = get_next_shape
         self.reset_hud_stats = reset_hud_stats
 
         # initialise blank game board
         self.board_pieces = (
-            [[0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])]
+            [[0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
+             for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])]
         )
         # create initial tetromino object
         self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
 
         # timers
-        self.down_speed = start_speed  # initial game speed
+        self.down_speed = global_settings.start_speed  # initial game speed
         self.down_speed_fast = self.down_speed * .3  # game speed when down arrow pressed
         self.down_pressed = False
-        self.vertical_timer = Timer(start_speed, True, self.move_down)  # timer to control vertical increments
+        self.vertical_timer = Timer(global_settings.start_speed, True, self.move_down)  # timer to control vert incremen
         self.vertical_timer.start()
-        self.horizontal_timer = Timer(MAX_BUTTON_DELAY)  # timer to control horizontal increments
-        self.rotational_timer = Timer(MAX_BUTTON_DELAY)  # timer to control rotational increments
-        self.drop_timer = Timer(MAX_BUTTON_DELAY)  # timer to control dropping tetros
+        self.horizontal_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control horizontal increments
+        self.rotational_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control rotational increments
+        self.drop_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control dropping tetros
+        self.music_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control music toggle
 
         # score
         self.current_level = 1
         self.current_score = 0
         self.current_lines = 0
+
+        # load sounds
+        self.bg_music = global_settings.pygame.mixer.Sound(join('audio', 'bg_music.mp3'))
+        self.bg_music.set_volume(0.05)
+        self.sfx_thump = global_settings.pygame.mixer.Sound(join('audio', 'thud.mp3'))
+        self.sfx_thump.set_volume(0.5)
+        self.sfx_tick = global_settings.pygame.mixer.Sound(join('audio', 'tick.mp3'))
+        self.sfx_tick.set_volume(0.5)
+        self.sfx_line_clear = global_settings.pygame.mixer.Sound(join('audio', 'line_clear.mp3'))
+        self.sfx_line_clear.set_volume(0.5)
+        self.sfx_tetris = global_settings.pygame.mixer.Sound(join('audio', 'tetris.mp3'))
+        self.sfx_tetris.set_volume(0.5)
+        self.music_playing = False
 
     def reset_game_stats(self):
         """reset game statistics and clear all pieces"""
@@ -44,10 +60,11 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
         self.board_pieces = [
-            [0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])
+            [0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
+            for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])
         ]
-        self.down_speed = start_speed
-        self.vertical_timer.duration = start_speed
+        self.down_speed = global_settings.start_speed
+        self.vertical_timer.duration = global_settings.start_speed
         self.down_speed_fast = self.down_speed * .3
         self.sprites.empty()
 
@@ -74,7 +91,7 @@ class Tetris:
         input_active = True
 
         while input_active:
-            for event in pygame.event.get():
+            for event in global_settings.pygame.event.get():
                 if event.type == pg_locals.KEYDOWN:
                     if event.key == pg_locals.K_RETURN:  # User pressed Enter to submit the name
                         input_active = False
@@ -87,12 +104,12 @@ class Tetris:
             self.display_surface.fill((0, 0, 0))
 
             # Display the input field
-            font = pygame.font.Font(None, 36)
+            font = global_settings.pygame.font.Font(None, 36)
             input_text = font.render("Enter your name: " + user_input, True, (255, 255, 255))
-            text_rect = input_text.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+            text_rect = input_text.get_rect(center=(global_settings.WIDTH / 2, global_settings.HEIGHT / 2))
             self.display_surface.blit(input_text, text_rect)
 
-            pygame.display.flip()
+            global_settings.pygame.display.flip()
 
         return user_input
 
@@ -102,10 +119,12 @@ class Tetris:
             if block.position.y < 0:
                 # display GAME OVER
                 print("GAME OVER")
-
+                self.bg_music.stop()
+                self.music_playing = False
                 # ask for users name
                 name = self.get_users_name()
-                self.save_high_score(name)
+                if name:
+                    self.save_high_score(name)
 
                 # reset stats ready for new game
                 self.reset_game_stats()
@@ -131,58 +150,81 @@ class Tetris:
         self.horizontal_timer.update()
         self.rotational_timer.update()
         self.drop_timer.update()
+        self.music_timer.update()
 
     def draw_grid(self):
         """draw the grid on the game board"""
-        for col in range(1, current_game_size[GAME_COLS]):
-            pygame.draw.line(
-                self.surface, (30, 30, 0), (col * current_game_size[GAME_GRID], 0),
-                (col * current_game_size[GAME_GRID], HEIGHT-PADDING))
-        for row in range(1, current_game_size[GAME_ROWS]):
-            pygame.draw.line(
-                self.surface, (30, 30, 0), (0, row * current_game_size[GAME_GRID]),
-                (GAME_WIDTH, row * current_game_size[GAME_GRID]))
+        for col in range(1, global_settings.current_game_size[global_settings.GAME_COLS]):
+            global_settings.pygame.draw.line(
+                self.surface, (30, 30, 0), (col * global_settings.current_game_size[global_settings.GAME_GRID], 0),
+                (col * global_settings.current_game_size[global_settings.GAME_GRID],
+                 global_settings.HEIGHT-global_settings.PADDING))
+        for row in range(1, global_settings.current_game_size[global_settings.GAME_ROWS]):
+            global_settings.pygame.draw.line(
+                self.surface, (30, 30, 0), (0, row * global_settings.current_game_size[global_settings.GAME_GRID]),
+                (global_settings.GAME_WIDTH, row * global_settings.current_game_size[global_settings.GAME_GRID]))
 
     def user_input(self):
         """get user input key pressed"""
-        user_input = pygame.key.get_pressed()
+        user_input = global_settings.pygame.key.get_pressed()
 
         # check if it was left or right
         if not self.horizontal_timer.started:
-            if user_input[pygame.K_LEFT]:
+            if user_input[global_settings.pygame.K_LEFT]:
+                if self.music_playing:
+                    self.sfx_tick.play()
                 self.tetro.move_horizontal(-1)
                 self.horizontal_timer.start()
-            if user_input[pygame.K_RIGHT]:
+            if user_input[global_settings.pygame.K_RIGHT]:
+                if self.music_playing:
+                    self.sfx_tick.play()
                 self.tetro.move_horizontal(1)
                 self.horizontal_timer.start()
 
         # check if it was up
         if not self.rotational_timer.started:
-            if user_input[pygame.K_UP]:
+            if user_input[global_settings.pygame.K_UP]:
+                if self.music_playing:
+                    self.sfx_tick.play()
                 self.tetro.rotate()
                 self.rotational_timer.start()
 
         # check if it was down and adjust drop speed accordingly
-        if not self.down_pressed and user_input[pygame.K_DOWN]:
+        if not self.down_pressed and user_input[global_settings.pygame.K_DOWN]:
             self.down_pressed = True
             self.vertical_timer.duration = self.down_speed_fast
-        if self.down_pressed and not user_input[pygame.K_DOWN]:
+        if self.down_pressed and not user_input[global_settings.pygame.K_DOWN]:
             self.down_pressed = False
             self.vertical_timer.duration = self.down_speed
 
         # check if it was space and drop tetro
         if not self.drop_timer.started:
-            if user_input[pygame.K_SPACE]:
+            if user_input[global_settings.pygame.K_SPACE]:
+                if self.music_playing:
+                    self.sfx_thump.play()
                 self.tetro.instant_drop()
                 self.drop_timer.start()
 
         # check if it was escape
-        if user_input[pygame.K_ESCAPE]:
+        if user_input[global_settings.pygame.K_ESCAPE]:
             print("Escape pressed")
             print("down speed", self.down_speed)
             print("vert timer", self.vertical_timer.duration)
             print("drop timer", self.drop_timer.start_time)
             reset_menu("Pause")
+
+        # Check if the "m" key is pressed and toggle the music
+        if user_input[global_settings.pygame.K_m] and not self.music_timer.started:
+            print("m pressed")
+            if self.music_playing:
+                print("music is playing, stopping music")
+                self.bg_music.stop()
+                self.music_playing = False
+            else:
+                print("music is not playing, starting music")
+                self.bg_music.play(-1)
+                self.music_playing = True
+            self.music_timer.start()
 
     def check_for_completed_row(self):
         """get index of any full row"""
@@ -193,6 +235,11 @@ class Tetris:
 
         # iterate through the full rows and remove the individual blocks
         if remove_rows:
+            if self.music_playing:
+                if len(remove_rows) == 4:
+                    self.sfx_tetris.play()
+                else:
+                    self.sfx_line_clear.play()
             for remove_row in remove_rows:
                 # remove the completed row from board
                 for block in self.board_pieces[remove_row]:
@@ -204,7 +251,8 @@ class Tetris:
                             block.position.y += 1
             # rebuild the board_pieces array
             self.board_pieces = [
-                [0 for i in range(current_game_size[GAME_COLS])] for j in range(current_game_size[GAME_ROWS])
+                [0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
+                for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])
             ]
             for block in self.sprites:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
@@ -215,7 +263,7 @@ class Tetris:
     def calculate_score(self, cleared_lines):
         """update the total lines, level, and calculate the score based on how many lines have been removed"""
         self.current_lines += cleared_lines
-        self.current_score += SCORES[cleared_lines] * self.current_level
+        self.current_score += global_settings.SCORES[cleared_lines] * self.current_level
         if self.current_lines / 10 > self.current_level:
             self.current_level += 1
             self.down_speed *= 0.8
@@ -231,7 +279,7 @@ class Tetris:
         self.surface.fill('#000000')
         self.sprites.draw(self.surface)
         self.draw_grid()
-        self.display_surface.blit(self.surface, (PADDING, PADDING))
+        self.display_surface.blit(self.surface, (global_settings.PADDING, global_settings.PADDING))
 
 
 class Tetros:
@@ -240,8 +288,8 @@ class Tetros:
         """Constructor, parameters shape (tetromino shape), group (of sprites), create_new_tetro (function from Tetris
         class) and board pieces (array representing the board)"""
         self.shape = shape
-        self.block_positions = TETROS[shape]["shape"]  # retrieve tetromino shapes from global_settings
-        self.colour = TETROS[shape]["colour"]
+        self.block_positions = global_settings.TETROS[shape]["shape"]  # retrieve tetromino shapes from global_settings
+        self.colour = global_settings.TETROS[shape]["colour"]
         self.create_new_tetro = create_new_tetro
         self.board_pieces = board_pieces
 
@@ -311,26 +359,29 @@ class Tetros:
                 block.position = new_block_positions[i]
 
 
-class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
+class Block(global_settings.pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
     """Class to handle the individual blocks of a tetromino"""
     def __init__(self, group, position, colour):
         # Constructor, parameters group (of sprites), position (x, y) and colour
         super().__init__(group)
-        self.image = pygame.Surface((current_game_size[GAME_GRID], current_game_size[GAME_GRID]))
+        self.image = (global_settings.pygame.Surface((global_settings.current_game_size[global_settings.GAME_GRID],
+                                                      global_settings.current_game_size[global_settings.GAME_GRID])))
         self.image.fill(colour)
-        self.position = (pygame.Vector2(position) +
-                         pygame.Vector2(current_game_size[GAME_COLS]//2-2, -2))  # set to roughly centre
-        x = self.position.x * current_game_size[GAME_GRID]
-        y = self.position.y * current_game_size[GAME_GRID]
+        self.position = (global_settings.pygame.Vector2(position) +
+                         global_settings.pygame.Vector2(
+                             global_settings.current_game_size[global_settings.GAME_COLS]//2-2, -2)
+                         )  # set to roughly centre
+        x = self.position.x * global_settings.current_game_size[global_settings.GAME_GRID]
+        y = self.position.y * global_settings.current_game_size[global_settings.GAME_GRID]
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         """update position of block"""
-        self.rect.topleft = self.position * current_game_size[GAME_GRID]
+        self.rect.topleft = self.position * global_settings.current_game_size[global_settings.GAME_GRID]
 
     def horizontal_collide(self, x_coord, board_pieces):
         """check collision with left and right walls"""
-        if not 0 <= x_coord < current_game_size[GAME_COLS]:
+        if not 0 <= x_coord < global_settings.current_game_size[global_settings.GAME_COLS]:
             return True
         """check collision with other tetrominos"""
         if board_pieces[int(self.position.y)][x_coord]:
@@ -338,7 +389,7 @@ class Block(pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
 
     def vertical_collide(self, y_coord, board_pieces):
         """check collision with floor"""
-        if y_coord >= current_game_size[GAME_ROWS]:
+        if y_coord >= global_settings.current_game_size[global_settings.GAME_ROWS]:
             return True
         """check collision with other tetrominos"""
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:

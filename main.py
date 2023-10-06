@@ -4,6 +4,9 @@ from hud import Hud
 from button import Button
 from config import Config
 from utility import *
+from global_settings import pygame
+import global_settings
+
 
 
 class Main:
@@ -14,8 +17,8 @@ class Main:
         icon = pygame.image.load(path.join("images", "icon.png"))
         pygame.display.set_icon(icon)
         pygame.display.set_caption("2805 Tetris")
-        total_window_width = 3*PADDING + GAME_WIDTH + HUD_WIDTH
-        total_window_height = 2*PADDING + GAME_HEIGHT
+        total_window_width = 3*global_settings.PADDING + global_settings.GAME_WIDTH + global_settings.HUD_WIDTH
+        total_window_height = 2*global_settings.PADDING + global_settings.GAME_HEIGHT
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
 
@@ -40,6 +43,22 @@ class Main:
         exit_img = pygame.image.load(path.join("images", "exit.png")).convert_alpha()
         yes_img = pygame.image.load(path.join("images", "yes.png")).convert_alpha()
         no_img = pygame.image.load(path.join("images", "no.png")).convert_alpha()
+        btn_small_img = pygame.image.load(path.join("images", "btn_small.png")).convert_alpha()
+        btn_normal_img = pygame.image.load(path.join("images", "btn_normal.png")).convert_alpha()
+        btn_large_img = pygame.image.load(path.join("images", "btn_large.png")).convert_alpha()
+
+        btn_1_img = pygame.image.load(path.join("images", "btn_1.png")).convert_alpha()
+        btn_2_img = pygame.image.load(path.join("images", "btn_2.png")).convert_alpha()
+        btn_3_img = pygame.image.load(path.join("images", "btn_3.png")).convert_alpha()
+        btn_4_img = pygame.image.load(path.join("images", "btn_4.png")).convert_alpha()
+        btn_5_img = pygame.image.load(path.join("images", "btn_5.png")).convert_alpha()
+        btn_6_img = pygame.image.load(path.join("images", "btn_6.png")).convert_alpha()
+
+        btn_normal2_img = pygame.image.load(path.join("images", "btn_normal.png")).convert_alpha()
+        btn_extended_img = pygame.image.load(path.join("images", "btn_extended.png")).convert_alpha()
+
+        btn_human_img = pygame.image.load(path.join("images", "btn_human.png")).convert_alpha()
+        btn_ai_img = pygame.image.load(path.join("images", "btn_ai.png")).convert_alpha()
 
         # create buttons
         self.return_home_btn = Button(270, 700, return_img)
@@ -49,15 +68,28 @@ class Main:
         self.score_btn = Button(378, 296, score_img)
         self.config_btn = Button(124, 413, config_img)
         self.exit_btn = Button(378, 413, exit_img)
+        self.small_btn = Button(120, 240, btn_small_img)
+        self.normal_btn = Button(270, 240, btn_normal_img)
+        self.large_btn = Button(420, 240, btn_large_img)
+        self.n1_btn = Button(130, 340, btn_1_img)
+        self.n2_btn = Button(200, 340, btn_2_img)
+        self.n3_btn = Button(270, 340, btn_3_img)
+        self.n4_btn = Button(340, 340, btn_4_img)
+        self.n5_btn = Button(410, 340, btn_5_img)
+        self.n6_btn = Button(480, 340, btn_6_img)
+        self.normal2_btn = Button(130, 440, btn_normal2_img)
+        self.extended_btn = Button(400, 440, btn_extended_img)
+        self.human_btn = Button(130, 540, btn_human_img)
+        self.ai_btn = Button(410, 540, btn_ai_img)
 
     def get_next_shape(self):
         """retrieve the first shape from the list of next shapes"""
         next_piece = self.next_shapes.pop(0)
         # replace popped piece for new random piece
-        if extended:
-            self.next_shapes.append(random.choice(EXTENDED_SHAPES_LIST))
+        if global_settings.extended:
+            self.next_shapes.append(random.choice(global_settings.EXTENDED_SHAPES_LIST))
         else:
-            self.next_shapes.append(random.choice(NORMAL_SHAPES_LIST))
+            self.next_shapes.append(random.choice(global_settings.NORMAL_SHAPES_LIST))
         return next_piece
 
     def update_score(self, lines, score, level):
@@ -76,20 +108,22 @@ class Main:
         y_offset = 170
         for i, (name, score) in enumerate(high_scores_data[:10]):
             text = font.render(f"{i + 1}. {name}: {score}", True, (255, 255, 255))
-            text_rect = text.get_rect(center=(WIDTH / 2, y_offset))
+            text_rect = text.get_rect(center=(global_settings.WIDTH / 2, y_offset))
             self.display_surface.blit(text, text_rect)
             y_offset += 50
 
     def run(self):
         """Main loop to refresh screen"""
+        if global_settings.extended:
+            print("Extro yes")
         while True:
             # check for X pressed
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
+            for event in global_settings.pygame.event.get():
+                if event.type == global_settings.pygame.QUIT:
+                    global_settings.pygame.quit()
                     exit()
 
-            if menu_system["Menu"]:  # display Menu screen
+            if global_settings.menu_system["Menu"]:  # display Menu screen
                 # display menu background image
                 self.display_surface.blit(self.home_page, (0, 0))
                 # check for button clicks and perform actions
@@ -104,7 +138,7 @@ class Main:
                     pygame.quit()
                     exit()
 
-            elif menu_system["Score"]:  # display Score screen
+            elif global_settings.menu_system["Score"]:  # display Score screen
                 # display the score background image
                 self.display_surface.blit(self.score_page, (0, 0))
                 self.display_top_scores()
@@ -112,23 +146,63 @@ class Main:
                 if self.return_home_btn.display(self.display_surface):
                     reset_menu("Menu")
 
-            elif menu_system["Config"]:  # display Config screen
+            elif global_settings.menu_system["Config"]:  # display Config screen
                 # display the config background image
                 self.display_surface.blit(self.config_page, (0, 0))
                 # create and run the config menu with current settings
-                config = Config(self.game.current_level, extended, human)
+                config = Config(self.game.current_level)
                 config.run()
                 # check for button clicks to perform action
                 if self.return_home_btn.display(self.display_surface):
                     reset_menu("Menu")
+                if self.small_btn.display(self.display_surface):
+                    print("small pressed")
+                    global_settings.current_game_size = global_settings.GAME_SIZE_SMALL
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
+                if self.normal_btn.display(self.display_surface):
+                    print("normal pressed")
+                    global_settings.current_game_size = global_settings.GAME_SIZE_NORMAL
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
+                if self.large_btn.display(self.display_surface):
+                    print("large pressed")
+                    global_settings.current_game_size = global_settings.GAME_SIZE_LARGE
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
+                if self.n1_btn.display(self.display_surface):
+                    print("1 pressed")
+                if self.n2_btn.display(self.display_surface):
+                    print("2 pressed")
+                if self.n3_btn.display(self.display_surface):
+                    print("3 pressed")
+                if self.n4_btn.display(self.display_surface):
+                    print("4 pressed")
+                if self.n5_btn.display(self.display_surface):
+                    print("5 pressed")
+                if self.n6_btn.display(self.display_surface):
+                    print("6 pressed")
+                if self.normal2_btn.display(self.display_surface):
+                    print("normal pressed")
+                    global_settings.extended = False
+                    print("extended:", global_settings.extended)
+                if self.extended_btn.display(self.display_surface):
+                    print("extended pressed")
+                    global_settings.extended = True
+                    print("extended:", global_settings.extended)
+                if self.human_btn.display(self.display_surface):
+                    print("human pressed")
+                    global_settings.human = True
+                    print("human mode:", global_settings.human)
+                if self.ai_btn.display(self.display_surface):
+                    print("ai pressed")
+                    global_settings.human = False
+                    print("human mode:", global_settings.human)
 
-            elif menu_system["Game"]:  # Display Game screen
+            elif global_settings.menu_system["Game"]:  # Display Game screen
                 # display grey background and run game and hud
                 self.display_surface.fill("Grey15")
                 self.game.run()
                 self.hud.run(self.next_shapes)
 
-            elif menu_system["Pause"]:  # display pause menu
+            elif global_settings.menu_system["Pause"]:  # display pause menu
                 # display the pause menu background image
                 self.display_surface.blit(self.pause_page, (0, 0))
                 # check for yes/no button clicks
@@ -136,12 +210,14 @@ class Main:
                     # self.game.save_high_score() # if they quit, no high score
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
+                    self.game.bg_music.stop()
+                    self.game.music_playing = False
 
                     reset_menu("Menu")
                 if self.no_btn.display(self.display_surface):
                     reset_menu("Game")
 
-            pygame.display.update()
+            global_settings.pygame.display.update()
             self.clock.tick(50)
 
 
