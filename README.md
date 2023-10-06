@@ -290,6 +290,3 @@ Many thanks to the Youtube tutorial creators:
 
 Pygame documentation:
 - https://www.pygame.org/docs/
-
-ChatGPT for debugging and providing unit tests:
-- https://chat.openai.com

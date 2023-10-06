@@ -1,6 +1,7 @@
 from timer import Timer
 from os import path
 from utility import *
+import pygame.locals as pg_locals
 
 
 class Tetris:
@@ -50,10 +51,50 @@ class Tetris:
         self.down_speed_fast = self.down_speed * .3
         self.sprites.empty()
 
-    def save_high_score(self):
-        """save high score to external file"""
+    def save_high_score(self, name):
+        """Save high score to an external file."""
         with open(path.join("assets", "high_scores.txt"), 'a') as high_scores:
-            high_scores.write(str(self.current_score) + "\n")
+            high_scores.write(name + ":" + str(self.current_score) + "\n")
+
+        with open("assets/high_scores.txt", "r") as high_scores_file:
+            high_scores_data = [line.strip().split(":") for line in high_scores_file]
+
+        # Convert scores to integers
+        high_scores_data = [(name, int(score)) for name, score in high_scores_data]
+
+        # Sort the list based on scores in descending order
+        high_scores_data.sort(key=lambda x: x[1], reverse=True)
+
+        with open("assets/high_scores.txt", "w") as high_scores_file:
+            for name, score in high_scores_data:
+                high_scores_file.write(f"{name}:{score}\n")
+
+    def get_users_name(self):
+        user_input = ""
+        input_active = True
+
+        while input_active:
+            for event in pygame.event.get():
+                if event.type == pg_locals.KEYDOWN:
+                    if event.key == pg_locals.K_RETURN:  # User pressed Enter to submit the name
+                        input_active = False
+                    elif event.key == pg_locals.K_BACKSPACE:  # User pressed Backspace to delete a character
+                        user_input = user_input[:-1]
+                    else:
+                        user_input += event.unicode  # Add the typed character to the input field
+
+            # Clear the screen
+            self.display_surface.fill((0, 0, 0))
+
+            # Display the input field
+            font = pygame.font.Font(None, 36)
+            input_text = font.render("Enter your name: " + user_input, True, (255, 255, 255))
+            text_rect = input_text.get_rect(center=(WIDTH / 2, HEIGHT / 2))
+            self.display_surface.blit(input_text, text_rect)
+
+            pygame.display.flip()
+
+        return user_input
 
     def check_game_over(self):
         """check if any block pieces are above game board"""
@@ -62,7 +103,9 @@ class Tetris:
                 # display GAME OVER
                 print("GAME OVER")
 
-                self.save_high_score()
+                # ask for users name
+                name = self.get_users_name()
+                self.save_high_score(name)
 
                 # reset stats ready for new game
                 self.reset_game_stats()

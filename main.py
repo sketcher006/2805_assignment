@@ -66,6 +66,20 @@ class Main:
         self.hud.score = score
         self.hud.level = level
 
+    def display_top_scores(self):
+        # Read the data from the file into a list of tuples
+        with open("assets/high_scores.txt", "r") as high_scores_file:
+            high_scores_data = [line.strip().split(":") for line in high_scores_file]
+
+        # Display the top ten scores on the screen
+        font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 50)
+        y_offset = 170
+        for i, (name, score) in enumerate(high_scores_data[:10]):
+            text = font.render(f"{i + 1}. {name}: {score}", True, (255, 255, 255))
+            text_rect = text.get_rect(center=(WIDTH / 2, y_offset))
+            self.display_surface.blit(text, text_rect)
+            y_offset += 50
+
     def run(self):
         """Main loop to refresh screen"""
         while True:
@@ -93,6 +107,7 @@ class Main:
             elif menu_system["Score"]:  # display Score screen
                 # display the score background image
                 self.display_surface.blit(self.score_page, (0, 0))
+                self.display_top_scores()
                 # check for button click to return to the main menu
                 if self.return_home_btn.display(self.display_surface):
                     reset_menu("Menu")
@@ -118,7 +133,7 @@ class Main:
                 self.display_surface.blit(self.pause_page, (0, 0))
                 # check for yes/no button clicks
                 if self.yes_btn.display(self.display_surface):
-                    self.game.save_high_score()
+                    # self.game.save_high_score() # if they quit, no high score
                     self.game.reset_game_stats()
                     self.hud.reset_hud_stats()
 
