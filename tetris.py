@@ -29,6 +29,7 @@ class Tetris:
         self.down_speed = global_settings.start_speed  # initial game speed
         self.down_speed_fast = self.down_speed * .3  # game speed when down arrow pressed
         self.down_pressed = False
+
         self.vertical_timer = Timer(global_settings.start_speed, True, self.move_down)  # timer to control vert incremen
         self.vertical_timer.start()
         self.horizontal_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control horizontal increments
@@ -37,7 +38,7 @@ class Tetris:
         self.music_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control music toggle
 
         # score
-        self.current_level = 1
+        self.current_level = global_settings.start_level
         self.current_score = 0
         self.current_lines = 0
 
@@ -56,7 +57,7 @@ class Tetris:
 
     def reset_game_stats(self):
         """reset game statistics and clear all pieces"""
-        self.current_level = 1
+        self.current_level = global_settings.start_level
         self.current_score = 0
         self.current_lines = 0
         self.board_pieces = [

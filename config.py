@@ -6,11 +6,10 @@ from utility import reset_menu
 
 class Config:
     """Class to handle the display and control of the configuration settings"""
-    def __init__(self, game_level):
+    def __init__(self):
         """Constructor, parameters game_size (size of the game grid), game_level (current game level), normal_extended
         (boolean representing normal pieces or extended pieces), game_mode (human or AI)"""
-        self.game_size = global_settings.current_game_size
-        self.game_level = game_level
+        # self.game_size = global_settings.current_game_size
         self.surface = global_settings.pygame.display.get_surface()
         self.font = global_settings.pygame.font.Font(path.join("assets", "Arcade.ttf"), 30)
 
@@ -24,13 +23,12 @@ class Config:
         """method to display the current parameters of the game"""
         text = "Extended" if global_settings.extended else "Normal"
         mode = "Human" if global_settings.human else "AI"
-
         self.display_text(
             (60, 200),
-            f"Game size: {int(self.game_size[global_settings.GAME_COLS])} x "
-            f"{int(self.game_size[global_settings.GAME_ROWS])}"
+            f"Game size: {int(global_settings.current_game_size[0])} x "
+            f"{int(global_settings.current_game_size[1])}"
         )
-        self.display_text((60, 300), f"Level: {self.game_level}")
+        self.display_text((60, 300), f"Level: {global_settings.start_level}")
 
         self.display_text((60, 400), f"Normal/Extended: {text}")
         self.display_text((60, 500), f"Mode: {mode}")

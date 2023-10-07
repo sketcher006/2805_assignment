@@ -1,13 +1,13 @@
+peta:35200
 archer:14700
+daniel:9000
 simon:3400
 reg:2000
 daniel:1200
 jenny:1000
+reg:1000
 john:900
 peta:400
 aaaa:400
 my name:300
 mike:100
-dan:0
-reg:0
-reg:0

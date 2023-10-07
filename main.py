@@ -21,7 +21,7 @@ class Main:
         total_window_height = 2*global_settings.PADDING + global_settings.GAME_HEIGHT
         self.display_surface = pygame.display.set_mode((total_window_width, total_window_height))
         self.clock = pygame.time.Clock()
-
+        self.config = Config()
         # get next shapes loaded ready for game to begin
         self.next_shapes = [get_shape() for i in range(2)]
 
@@ -150,8 +150,8 @@ class Main:
                 # display the config background image
                 self.display_surface.blit(self.config_page, (0, 0))
                 # create and run the config menu with current settings
-                config = Config(self.game.current_level)
-                config.run()
+
+                self.config.run()
                 # check for button clicks to perform action
                 if self.return_home_btn.display(self.display_surface):
                     reset_menu("Menu")
@@ -169,16 +169,40 @@ class Main:
                     self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n1_btn.display(self.display_surface):
                     print("1 pressed")
+                    global_settings.start_level = 1
+                    global_settings.start_speed = global_settings.start_speed_1
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n2_btn.display(self.display_surface):
                     print("2 pressed")
+                    global_settings.start_level = 2
+                    global_settings.start_speed = global_settings.start_speed_2
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n3_btn.display(self.display_surface):
                     print("3 pressed")
+                    global_settings.start_level = 3
+                    global_settings.start_speed = global_settings.start_speed_3
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n4_btn.display(self.display_surface):
                     print("4 pressed")
+                    global_settings.start_level = 4
+                    global_settings.start_speed = global_settings.start_speed_4
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n5_btn.display(self.display_surface):
                     print("5 pressed")
+                    global_settings.start_level = 5
+                    global_settings.start_speed = global_settings.start_speed_5
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n6_btn.display(self.display_surface):
                     print("6 pressed")
+                    global_settings.start_level = 6
+                    global_settings.start_speed = global_settings.start_speed_6
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.normal2_btn.display(self.display_surface):
                     print("normal pressed")
                     global_settings.extended = False
@@ -212,7 +236,8 @@ class Main:
                     self.hud.reset_hud_stats()
                     self.game.bg_music.stop()
                     self.game.music_playing = False
-
+                    self.hud = Hud()
+                    self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                     reset_menu("Menu")
                 if self.no_btn.display(self.display_surface):
                     reset_menu("Game")

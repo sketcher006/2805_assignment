@@ -12,7 +12,7 @@ class Hud:
 
         # game statistics
         self.score = 0
-        self.level = 1
+        self.level = global_settings.start_level
         self.lines = 0
 
         # create dictionary to store shape image previews
@@ -26,7 +26,7 @@ class Hud:
     def reset_hud_stats(self):
         """initialise game statistics"""
         self.score = 0
-        self.level = 1
+        self.level = global_settings.start_level
         self.lines = 0
 
     def display_text(self, position, text):

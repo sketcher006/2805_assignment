@@ -59,8 +59,16 @@ SCORES = {
 }
 
 ## START SETTINGS
-start_speed = 200  # milliseconds between vertical drop time
+start_speed_1 = 200
+start_speed_2 = 160
+start_speed_3 = 128
+start_speed_4 = 102
+start_speed_5 = 82
+start_speed_6 = 65
+
+start_speed = start_speed_1  # milliseconds between vertical drop time
 MAX_BUTTON_DELAY = 150  # milliseconds between the fastest time allowed between key presses
+start_level = 1
 
 menu_system = {  # Dictionary to control which page is displayed
     "Menu": True,
