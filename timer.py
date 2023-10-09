@@ -34,3 +34,11 @@ class Timer:
                 # run timer again if repeated
                 if self.repeated:
                     self.start()
+
+    def finished(self):
+        """Check if the timer has finished."""
+        if self.started:
+            current_time = pygame.time.get_ticks()
+            elapsed_time = current_time - self.start_time
+            return elapsed_time >= self.duration
+        return False
