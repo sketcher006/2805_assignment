@@ -37,7 +37,7 @@ class Tetris:
         self.rotational_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control rotational increments
         self.drop_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control dropping tetros
         self.music_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control music toggle
-        self.ai_timer = Timer(1000)
+        self.ai_timer = Timer(200)
         self.ai_timer_horizontal = Timer(20)
 
         # score
@@ -278,10 +278,10 @@ class Tetris:
                         highest_point_of_current_tetro = new_tetro_clone.get_tetros_height()
 
                         # Weights for the penalties
-                        height_weight = .2
-                        unwanted_spaces_weight = 1
-                        potential_rows_weight = -1
-                        highest_point_weight = 2
+                        height_weight = .5
+                        unwanted_spaces_weight = 2
+                        potential_rows_weight = -2
+                        highest_point_weight = 1
 
                         # Calculate the metric
                         this_rotations_penalty = (
@@ -323,6 +323,8 @@ class Tetris:
             elapsed_time = current_time - self.ai_timer.start_time
             if elapsed_time >= self.ai_timer.duration:
                 self.tetro.instant_drop(self.board_pieces, True)
+                if self.music_playing:
+                    self.sfx_thump.play()
 
     def user_input(self):
         """get user input key pressed"""
