@@ -107,7 +107,9 @@ class Main:
         font = pygame.font.Font(path.join("assets", "Arcade.ttf"), 50)
         y_offset = 170
         for i, (name, score) in enumerate(high_scores_data[:10]):
-            text = font.render(f"{i + 1}. {name}: {score}", True, (255, 255, 255))
+            # Left-align i and name, and right-align score
+            formatted_text = f"{i + 1:<3}{name:<10}{score:>6}"
+            text = font.render(formatted_text, True, (255, 255, 255))
             text_rect = text.get_rect(center=(global_settings.WIDTH / 2, y_offset))
             self.display_surface.blit(text, text_rect)
             y_offset += 50

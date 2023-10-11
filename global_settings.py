@@ -72,12 +72,13 @@ SCORES = {
 }
 
 ## START SETTINGS
+speed_increment_multiplier = 0.8
 start_speed_1 = 200
-start_speed_2 = 160
-start_speed_3 = 128
-start_speed_4 = 102
-start_speed_5 = 82
-start_speed_6 = 65
+start_speed_2 = start_speed_1 * speed_increment_multiplier
+start_speed_3 = start_speed_2 * speed_increment_multiplier
+start_speed_4 = start_speed_3 * speed_increment_multiplier
+start_speed_5 = start_speed_4 * speed_increment_multiplier
+start_speed_6 = start_speed_5 * speed_increment_multiplier
 
 start_speed = start_speed_1  # milliseconds between vertical drop time
 MAX_BUTTON_DELAY = 130  # milliseconds between the fastest time allowed between key presses

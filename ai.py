@@ -1,3 +1,113 @@
+WORKING:
+
+
+def run_ai(self):
+    """AI logic to control gameplay"""
+    if not self.ai_timer.started:
+        best_rotate = None
+        best_metric = float('inf')
+        best_x_coords = []
+
+        # Weights for the penalties
+        height_weight = .5
+        unwanted_spaces_weight = 2
+        potential_rows_weight = -2
+        highest_point_weight = 1
+
+        # generate raw shape at far left
+        master_tetro = self.tetro.clone()
+        for block_no in range(len(master_tetro.blocks)):
+            master_tetro.blocks[block_no].position.x = (
+                global_settings.TETROS[master_tetro.shape]["shape"][block_no][0]
+            )
+        master_tetro.print_data()
+
+        # iterate through all rotations
+        for rotation in range(4):
+            # clone tetro and board
+            tetro_clone = master_tetro.clone()
+            board_clone = [[cell for cell in row] for row in self.board_pieces]
+            # tetro_clone.print_tetro_shape()
+            # self.print_game_board(board_clone, tetro_clone, True)
+
+            # rotate the piece rotation times
+            for i in range(rotation):
+                tetro_clone.rotate()
+            # tetro_clone.print_tetro_shape()
+            # tetro_clone.print_data()
+
+            # analyse every possible x position
+            for x_pos in range(global_settings.current_game_size[0]):
+                # Clone the cloned tetro and board to reset its attributes
+                new_tetro_clone = tetro_clone.clone()
+                new_board_clone = [[cell for cell in row] for row in board_clone]
+
+                # new_tetro_clone.print_tetro_shape()
+                # new_tetro_clone.print_data()
+
+                # Move cloned tetro to new x pos
+                for j in range(len(new_tetro_clone.blocks)):
+                    new_tetro_clone.blocks[j].position.x += x_pos
+
+                # new_tetro_clone.print_tetro_shape()
+                # new_tetro_clone.print_data()
+
+                # check if position is within bounds
+                if new_tetro_clone.in_bounds():
+                    # place tetro in this x coord
+                    new_tetro_clone.instant_drop(new_board_clone, False)
+                    # self.print_game_board(new_board_clone, new_tetro_clone, True)
+                    # calculate metric data
+                    unwanted_spaces = self.calculate_unwanted_spaces(new_board_clone)
+                    height_penalty = self.calculate_max_height_penalty(new_board_clone)
+                    potential_completed_rows = self.check_potential_rows(new_board_clone)
+                    highest_point_of_current_tetro = new_tetro_clone.get_tetros_height()
+
+                    # Calculate the metric
+                    this_rotations_penalty = (
+                            height_weight * height_penalty +
+                            unwanted_spaces_weight * unwanted_spaces +
+                            potential_rows_weight * len(potential_completed_rows) +
+                            highest_point_weight * highest_point_of_current_tetro
+                    )
+                    print(f"boards score for {rotation} and {x_pos}: {this_rotations_penalty}")
+                    self.print_game_board(new_board_clone, new_tetro_clone, True)
+                    if this_rotations_penalty < best_metric:
+                        best_metric = this_rotations_penalty
+                        best_rotate = rotation
+                        best_x_coords = []
+                        for block in new_tetro_clone.blocks:
+                            best_x_coords.append(block.position.x)
+                        # best_x_coord = x_pos
+                # else:
+                #     print("block cant be here:", x_pos)
+
+        print("best rotation:", best_rotate)
+        # print("best x-co:", best_x_coord)
+        print("best metric:", best_metric)
+
+        # do the best move found here
+        # rotate best_rotate
+
+        for k in range(best_rotate):
+            self.tetro.rotate()
+        # move to best coordinate
+        for l in range(len(self.tetro.blocks)):
+            self.tetro.blocks[l].position.x = best_x_coords[l]
+
+        self.ai_timer.start()
+
+    else:
+        self.ai_timer.update()
+
+        current_time = global_settings.pygame.time.get_ticks()
+        elapsed_time = current_time - self.ai_timer.start_time
+        if elapsed_time >= self.ai_timer.duration:
+            self.tetro.instant_drop(self.board_pieces, True)
+            if self.music_playing:
+                self.sfx_thump.play()
+
+
 # RANDOM ai
 else:
 ai_is_moving = True
