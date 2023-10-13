@@ -17,11 +17,12 @@ class Tetris:
         self.update_score = update_score
         self.get_next_shape = get_next_shape
         self.reset_hud_stats = reset_hud_stats
+        self.pause = False
 
         # initialise blank game board
         self.board_pieces = (
-            [[0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
-             for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])]
+            [[0 for i in range(global_settings.GAME_COLS)]
+             for j in range(global_settings.GAME_ROWS)]
         )
         # create initial tetromino object
         self.tetro = Tetros(get_shape(), self.sprites, self.create_new_tetro, self.board_pieces)
@@ -37,7 +38,7 @@ class Tetris:
         self.rotational_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control rotational increments
         self.drop_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control dropping tetros
         self.music_timer = Timer(global_settings.MAX_BUTTON_DELAY)  # timer to control music toggle
-        self.ai_timer = Timer(200)
+        self.ai_timer = Timer(50)
         self.ai_timer_horizontal = Timer(20)
 
         # score
@@ -64,8 +65,8 @@ class Tetris:
         self.current_score = 0
         self.current_lines = 0
         self.board_pieces = [
-            [0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
-            for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])
+            [0 for i in range(global_settings.GAME_COLS)]
+            for j in range(global_settings.GAME_ROWS)
         ]
         self.down_speed = global_settings.start_speed
         self.vertical_timer.duration = global_settings.start_speed
@@ -186,7 +187,7 @@ class Tetris:
         for row in range(len(board)):
             for col in range(len(board[0])):
                 if board[row][col] != 0:
-                    return global_settings.current_game_size[1] - row
+                    return global_settings.GAME_ROWS - row
         return 0
 
     def move_down(self):
@@ -205,15 +206,15 @@ class Tetris:
 
     def draw_grid(self):
         """draw the grid on the game board"""
-        for col in range(1, global_settings.current_game_size[global_settings.GAME_COLS]):
+        for col in range(1, global_settings.GAME_COLS):
             global_settings.pygame.draw.line(
-                self.surface, (30, 30, 0), (col * global_settings.current_game_size[global_settings.GAME_GRID], 0),
-                (col * global_settings.current_game_size[global_settings.GAME_GRID],
+                self.surface, (30, 30, 0), (col * global_settings.GAME_GRID, 0),
+                (col * global_settings.GAME_GRID,
                  global_settings.HEIGHT-global_settings.PADDING))
-        for row in range(1, global_settings.current_game_size[global_settings.GAME_ROWS]):
+        for row in range(1, global_settings.GAME_ROWS):
             global_settings.pygame.draw.line(
-                self.surface, (30, 30, 0), (0, row * global_settings.current_game_size[global_settings.GAME_GRID]),
-                (global_settings.GAME_WIDTH, row * global_settings.current_game_size[global_settings.GAME_GRID]))
+                self.surface, (30, 30, 0), (0, row * global_settings.GAME_GRID),
+                (global_settings.GAME_WIDTH, row * global_settings.GAME_GRID))
 
     def run_ai(self):
         """AI logic to control gameplay"""
@@ -246,7 +247,7 @@ class Tetris:
                     tetro_clone.rotate()
 
                 # analyse every possible x position
-                for x_pos in range(global_settings.current_game_size[0]):
+                for x_pos in range(global_settings.GAME_COLS):
                     # Clone the cloned tetro and board to reset its attributes
                     new_tetro_clone = tetro_clone.clone()
                     new_board_clone = [[cell for cell in row] for row in board_clone]
@@ -347,7 +348,12 @@ class Tetris:
 
         # check if it was p
         if user_input[global_settings.pygame.K_p]:
-            print("p pressed")
+            if self.pause:
+                self.pause = False
+            else:
+                self.pause = True
+                reset_menu("Pause2")
+
 
         # Check if the "m" key is pressed and toggle the music
         if user_input[global_settings.pygame.K_m] and not self.music_timer.started:
@@ -387,8 +393,8 @@ class Tetris:
                             block.position.y += 1
             # rebuild the board_pieces array
             self.board_pieces = [
-                [0 for i in range(global_settings.current_game_size[global_settings.GAME_COLS])]
-                for j in range(global_settings.current_game_size[global_settings.GAME_ROWS])
+                [0 for i in range(global_settings.GAME_COLS)]
+                for j in range(global_settings.GAME_ROWS)
             ]
             for block in self.sprites:
                 self.board_pieces[int(block.position.y)][int(block.position.x)] = block
@@ -545,13 +551,13 @@ class Tetros:
     def in_bounds(self):
         """Simple method to check a block is within the bounds of the game board at any time"""
         for block in self.blocks:
-            if block.position.x < 0 or block.position.x >= global_settings.current_game_size[0]:
+            if block.position.x < 0 or block.position.x >= global_settings.GAME_COLS:
                 return False
         return True
 
     def get_tetros_height(self):
         """Return the highest y coordinate of a tetro"""
-        return global_settings.current_game_size[1] - min(block.position.y for block in self.blocks)
+        return global_settings.GAME_ROWS - min(block.position.y for block in self.blocks)
 
 
 class Block(global_settings.pygame.sprite.Sprite):  # inherit pygames sprite.Sprite class
@@ -560,24 +566,24 @@ class Block(global_settings.pygame.sprite.Sprite):  # inherit pygames sprite.Spr
         # Constructor, parameters group (of sprites), position (x, y) and colour
         super().__init__(group)
         self.colour = colour
-        self.image = (global_settings.pygame.Surface((global_settings.current_game_size[global_settings.GAME_GRID],
-                                                      global_settings.current_game_size[global_settings.GAME_GRID])))
+        self.image = (global_settings.pygame.Surface((global_settings.GAME_GRID,
+                                                      global_settings.GAME_GRID)))
         self.image.fill(colour)
         self.position = (global_settings.pygame.Vector2(position) +
                          global_settings.pygame.Vector2(
-                             global_settings.current_game_size[global_settings.GAME_COLS]//2-1, -2)
+                             global_settings.GAME_COLS//2-1, -2)
                          )  # set to roughly centre
-        x = self.position.x * global_settings.current_game_size[global_settings.GAME_GRID]
-        y = self.position.y * global_settings.current_game_size[global_settings.GAME_GRID]
+        x = self.position.x * global_settings.GAME_GRID
+        y = self.position.y * global_settings.GAME_GRID
         self.rect = self.image.get_rect(topleft=(x, y))
 
     def update(self):
         """update position of block"""
-        self.rect.topleft = self.position * global_settings.current_game_size[global_settings.GAME_GRID]
+        self.rect.topleft = self.position * global_settings.GAME_GRID
 
     def horizontal_collide(self, x_coord, board_pieces):
         """check collision with left and right walls"""
-        if not 0 <= x_coord < global_settings.current_game_size[global_settings.GAME_COLS]:
+        if not 0 <= x_coord < global_settings.GAME_COLS:
             return True
         """check collision with other tetrominos"""
         if global_settings.human:
@@ -586,7 +592,7 @@ class Block(global_settings.pygame.sprite.Sprite):  # inherit pygames sprite.Spr
 
     def vertical_collide(self, y_coord, board_pieces):
         """check collision with floor"""
-        if y_coord >= global_settings.current_game_size[global_settings.GAME_ROWS]:
+        if y_coord >= global_settings.GAME_ROWS:
             return True
         """check collision with other tetrominos"""
         if y_coord >= 0 and board_pieces[y_coord][int(self.position.x)]:

@@ -25,8 +25,8 @@ class Config:
         mode = "Human" if global_settings.human else "AI"
         self.display_text(
             (60, 200),
-            f"Game size: {int(global_settings.current_game_size[0])} x "
-            f"{int(global_settings.current_game_size[1])}"
+            f"Game size: {int(global_settings.GAME_COLS)} x "
+            f"{int(global_settings.GAME_ROWS)}"
         )
         self.display_text((60, 300), f"Level: {global_settings.start_level}")
 

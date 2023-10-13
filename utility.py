@@ -23,3 +23,9 @@ def get_shape():
         random_shape = random.choice(global_settings.NORMAL_SHAPES_LIST)
     print(random_shape)
     return random_shape
+
+
+def update_game_size():
+    global_settings.GAME_COLS = global_settings.current_game_size[0]
+    global_settings.GAME_ROWS = global_settings.current_game_size[1]
+    global_settings.GAME_GRID = global_settings.current_game_size[2]

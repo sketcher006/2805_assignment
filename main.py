@@ -34,6 +34,7 @@ class Main:
         self.score_page = pygame.image.load(path.join("images", "scores.png")).convert_alpha()
         self.config_page = pygame.image.load(path.join("images", "configpage.png")).convert_alpha()
         self.pause_page = pygame.image.load(path.join("images", "pausepage.png")).convert_alpha()
+        self.pause_page2 = pygame.image.load(path.join("images", "PAUSED.png")).convert_alpha()
 
         # load button images
         return_img = pygame.image.load(path.join("images", "return.png")).convert_alpha()
@@ -125,6 +126,12 @@ class Main:
                     global_settings.pygame.quit()
                     exit()
 
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        if self.game.pause:
+
+                            reset_menu("Game")
+
             if global_settings.menu_system["Menu"]:  # display Menu screen
                 # display menu background image
                 self.display_surface.blit(self.home_page, (0, 0))
@@ -160,14 +167,17 @@ class Main:
                 if self.small_btn.display(self.display_surface):
                     print("small pressed")
                     global_settings.current_game_size = global_settings.GAME_SIZE_SMALL
+                    update_game_size()
                     self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.normal_btn.display(self.display_surface):
                     print("normal pressed")
                     global_settings.current_game_size = global_settings.GAME_SIZE_NORMAL
+                    update_game_size()
                     self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.large_btn.display(self.display_surface):
                     print("large pressed")
                     global_settings.current_game_size = global_settings.GAME_SIZE_LARGE
+                    update_game_size()
                     self.game = Tetris(self.update_score, self.get_next_shape, self.hud.reset_hud_stats)
                 if self.n1_btn.display(self.display_surface):
                     print("1 pressed")
@@ -243,6 +253,11 @@ class Main:
                     reset_menu("Menu")
                 if self.no_btn.display(self.display_surface):
                     reset_menu("Game")
+
+            elif global_settings.menu_system["Pause2"]:  # display pause2 menu
+                self.display_surface.blit(self.pause_page2, (0, 0))
+
+
 
             global_settings.pygame.display.update()
             self.clock.tick(50)
